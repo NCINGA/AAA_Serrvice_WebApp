@@ -1,0 +1,98 @@
+.side-menu {
+    position: fixed;
+    background:#ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 65px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: width 0.3s;
+    height: 100%;
+}
+
+.toggle-button {
+    margin: 10px;
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+    cursor: pointer;
+}
+
+.menu-container {
+    transition: width 0.3s;
+    height: 100%;
+    background:#ffffff;
+}
+
+.menu-container.expanded {
+    width: 300px;
+
+}
+
+.menu-container.collapsed {
+    width: 60px;
+
+}
+
+.collapsed-icons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+}
+
+.collapsed-item {
+
+    position: relative;
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.collapsed-item i {
+    margin-right: 10px;
+    font-size: 20px; /* Increase icon size for better visibility */
+}
+
+.menu-label {
+
+    display: none; /* Hide labels by default */
+}
+
+.submenu {
+
+    display: none;
+    position: absolute;
+    left: 100%;
+    width:150px;
+    top: 0;
+    z-index: 1000;
+
+}
+
+.collapsed-item:hover .submenu {
+    display: block; /* Show submenu on hover */
+}
+
+.submenu .p-menubar-root-list {
+
+    background-color: transparent; /* Remove gray background */
+    box-shadow: none; /* Remove shadow */
+}
+
+.submenu .p-menubar-root-list .p-menuitem-link {
+    outline: none;
+}
+
+.custom-menubar .p-menubar-toggler {
+    display: none;
+}
+
+
+.custom-menubar .p-menubar {
+
+    display: block !important;
+}
+
+
