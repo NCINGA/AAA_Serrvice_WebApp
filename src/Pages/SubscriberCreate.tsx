@@ -1,16 +1,33 @@
-import React, { FC, useState } from "react";
-import { Button } from "primereact/button";
-import { InputText } from "primereact/inputtext";
-import { Dropdown } from "primereact/dropdown";
-import { Divider } from "primereact/divider";
+import React, {FC, useState} from "react";
+import {Button} from "primereact/button";
+import {InputText} from "primereact/inputtext";
+import {Dropdown} from "primereact/dropdown";
+import {Divider} from "primereact/divider";
 import {TabPanel, TabView} from "primereact/tabview";
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
+import {GET_PLANS} from "../graphql/queries";
+import {useQuery} from "@apollo/client";
+import {IPlan} from "../interface/plan";
+import {InputIcon} from "primereact/inputicon";
+import {IconField} from "primereact/iconfield";
+import {Card} from "primereact/card";
 
 const SubscriberCreate: FC = () => {
+    const [showPassword, setShowPassword] = useState(false);
+    const [plan, setPlan] = useState<any>(null);
     const [products, setProducts] = useState([
-        {code: "001", name:"Test", category:"Test", quantity:1455}
+        {code: "001", name: "Test", category: "Test", quantity: 1455}
     ]);
+    const {loading, error, data} = useQuery(GET_PLANS, {
+        notifyOnNetworkStatusChange: true,
+    });
+    const planOptions = data?.getPlans?.map((plan: IPlan) => ({
+        label: plan?.planName,
+        value: plan?.planId,
+        decs: plan?.description
+    }));
+
 
     const [formData, setFormData] = useState({
         username: '',
@@ -20,7 +37,8 @@ const SubscriberCreate: FC = () => {
         email: '',
         extId: '',
         realm: '',
-        type: ''
+        type: '',
+        planId: ''
     });
 
     const statusOptions = [
@@ -34,11 +52,15 @@ const SubscriberCreate: FC = () => {
 
     const handleInputChange = (e, field) => {
         const value = e.target ? e.target.value : e.value;
-        setFormData({ ...formData, [field]: value });
+        setFormData({...formData, [field]: value});
     };
 
     const handleSubmit = () => {
         console.log("Form Data: ", formData);
+    };
+
+    const togglePasswordVisibility = () => {
+        setShowPassword((prevState) => !prevState);
     };
 
     return (
@@ -64,15 +86,22 @@ const SubscriberCreate: FC = () => {
                                 onChange={(e) => handleInputChange(e, 'username')}
                             />
                         </div>
+
                         <div className="p-field">
                             <label htmlFor="password">Password</label>
-                            <InputText
-                                id="password"
-                                type="password"
-                                value={formData.password}
-                                onChange={(e) => handleInputChange(e, 'password')}
-                            />
+                            <IconField>
+                                <InputIcon onClick={togglePasswordVisibility}
+                                           className={`pi ${showPassword ? 'pi-eye' : 'pi-eye-slash'}`}> </InputIcon>
+                                <InputText
+                                    type={showPassword ? 'text' : 'password'}
+                                    id="password"
+                                    value={formData.password}
+                                    onChange={(e) => handleInputChange(e, 'password')}
+                                />
+                            </IconField>
                         </div>
+
+
                         <div className="p-field">
                             <label htmlFor="status">Status</label>
                             <Dropdown
@@ -144,15 +173,29 @@ const SubscriberCreate: FC = () => {
                                     <div className="p-field">
                                         <label htmlFor="type">Plan</label>
                                         <Dropdown
+                                            loading={loading}
                                             id="type"
-                                            value={formData.type}
-                                            options={typeOptions}
-                                            onChange={(e) => handleInputChange(e, 'type')}
-                                            placeholder="Select a Type"
+                                            value={formData.planId}
+                                            options={planOptions}
+                                            onChange={(e) => {
+                                                handleInputChange(e, 'planId');
+                                                const plan = data?.getPlans?.filter((plan: IPlan) => plan.planId == e.target.value)?.[0];
+                                                setPlan(plan);
+
+
+                                            }}
+                                            placeholder="Select Plan"
                                         />
                                     </div>
 
                                 </div>
+
+                                <Card title="Description">
+                                    <p className="m-0">
+                                        {plan?.description ?? ""}
+                                    </p>
+                                </Card>
+
                                 <Divider/>
                                 <div
                                     style={{
