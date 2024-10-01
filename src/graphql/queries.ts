@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import {gql} from '@apollo/client';
 
 export const GET_SUBSCRIBERS = gql`
     query GetSubscribers($page: Int!, $size: Int!) {
@@ -22,3 +22,11 @@ export const GET_SUBSCRIBERS = gql`
         }
     }
 `;
+
+export const GET_PLANS = gql`
+    query GetPlans {
+        getPlans
+    }
+
+`;
+
