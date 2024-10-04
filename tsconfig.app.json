@@ -24,5 +24,9 @@
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "node_modules/localforage/typings/localforage.d.ts",
+    "node_modules/localforage/typings/localforage.d.ts"
+  ]
 }

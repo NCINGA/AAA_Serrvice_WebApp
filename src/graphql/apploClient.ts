@@ -1,8 +1,9 @@
 import {ApolloClient, createHttpLink, InMemoryCache, split} from '@apollo/client';
-import {setContext} from '@apollo/client/link/context';
 import {getMainDefinition} from '@apollo/client/utilities';
 import {GraphQLWsLink} from "@apollo/client/link/subscriptions";
 import {createClient} from "graphql-ws";
+import {persistCache} from 'apollo-cache-persist';
+import localForage from 'localforage';
 
 const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZXhwIjoxNzI0Mjk2MjYwLCJzY29wZSI6Im1lc3NhZ2U6cmVhZCJ9.WcUZOcyMjlQQO_VTXvLTlnM5bUuuXJNiVgNI1EjHHSs";
 
@@ -18,7 +19,7 @@ const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZXhwIjoxNzI0Mjk2MjYwLCJz
 const httpLink = createHttpLink({
     uri: '/graphql',
 });
-
+const cache = new InMemoryCache();
 const wsLink = new GraphQLWsLink(createClient({
     url: '/graphql'
 }));
@@ -32,12 +33,20 @@ const splitLink = split(
         );
     },
     wsLink,
-   httpLink
+    httpLink
 );
+
+(async () => {
+    await persistCache({
+        cache,
+        storage: localForage,
+    });
+})();
+
 
 const client = new ApolloClient({
     link: splitLink,
-    cache: new InMemoryCache(),
+    cache: cache,
     connectToDevTools: true
 });
 

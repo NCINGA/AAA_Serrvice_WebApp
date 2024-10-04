@@ -6,19 +6,30 @@ import {Divider} from "primereact/divider";
 import {TabPanel, TabView} from "primereact/tabview";
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
-import {CREATE_NEW_SUBSCRIBER, GET_PLAN_ATTRIBUTES, GET_PLAN_PARAMETERS, GET_PLANS} from "../graphql/queries";
+import {
+    CREATE_NEW_SUBSCRIBER,
+    GET_NAS_WHITELIST,
+    GET_PLAN_ATTRIBUTES,
+    GET_PLAN_PARAMETERS,
+    GET_PLANS
+} from "../graphql/queries";
 import {useMutation, useQuery} from "@apollo/client";
 import {IPlan} from "../interface/plan";
 import {InputIcon} from "primereact/inputicon";
 import {IconField} from "primereact/iconfield";
 import {Card} from "primereact/card";
 import {ProgressSpinner} from "primereact/progressspinner";
+import * as localForage from "localforage";
 
 const SubscriberCreate: FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [plan, setPlan] = useState<any>(null);
     const [localAttributes, setLocalAttributes] = useState([]);
     const [localParameters, setLocalParameters] = useState([]);
+    const [localNasWhitelist, setLocalNasWhitelist] = useState([]);
+    const [localDeviceWhitelist, setLocalDeviceWhitelist] = useState([]);
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [subscriberId, setSubscriberId] = useState<number>(0);
     const [formData, setFormData] = useState({
         username: '',
         password: '',
@@ -30,9 +41,7 @@ const SubscriberCreate: FC = () => {
         type: '',
         planId: ''
     });
-    const [products, setProducts] = useState([
-        {code: "001", name: "Test", category: "Test", quantity: 1455}
-    ]);
+
     const {loading: loadingPlans, error: fetchPlanError, data: plans} = useQuery(GET_PLANS, {
         notifyOnNetworkStatusChange: true,
     });
@@ -57,6 +66,35 @@ const SubscriberCreate: FC = () => {
         variables: {planId: formData.planId}
     });
 
+    const {
+        loading: loadingNasWhitelist,
+        error: fetchNasWhitelistError,
+        data: nasWhitelist,
+        refetch: refetchNasWhitelist,
+    } = useQuery(GET_NAS_WHITELIST, {
+        notifyOnNetworkStatusChange: true,
+        variables: {subscriberId: subscriberId}
+    });
+
+    const [createSubscriber, {
+        loading: createSubscriberLoder,
+        error: createSubscriberError,
+        data: createSubscriberSuccess
+    }] = useMutation(CREATE_NEW_SUBSCRIBER, {
+        notifyOnNetworkStatusChange: true,
+        onCompleted: async (data) => {
+            const subscriberId = data.createSubscriber.subscriberId;
+            setSubscriberId(subscriberId)
+            try {
+                await localForage.setItem('subscriberId', subscriberId);
+            } catch (error) {
+                console.error('Error saving to localForage:', error);
+            }
+
+        },
+    });
+
+
     useEffect(() => {
         if (attributes?.getPlanAttribute) {
             setLocalAttributes(attributes.getPlanAttribute);
@@ -70,6 +108,12 @@ const SubscriberCreate: FC = () => {
         }
     }, [parameters]);
 
+    useEffect(() => {
+        if (nasWhitelist?.getNasWhiteList) {
+            setLocalNasWhitelist(nasWhitelist.getNasWhiteList);
+        }
+    }, [nasWhitelist]);
+
 
     const onUpdatePlanOverrideSubscriber = (value, editAttribute) => {
         const updatedAttributes = localAttributes?.map((attribute) =>
@@ -80,19 +124,29 @@ const SubscriberCreate: FC = () => {
         setLocalAttributes(updatedAttributes);
     };
 
+    const onUpdatePlanParameterSubscriber = (value, editParameter) => {
+        const updatedParameter = localParameters?.map((parameter) =>
+            parameter.parameterId === editParameter.parameterId
+                ? {...parameter, parameterOverrideValue: value}
+                : parameter
+        );
+        setLocalParameters(updatedParameter);
+    };
+
+    const onUpdateNasPattern = (value, editNasPattern) => {
+        const updateNasPattern = localNasWhitelist?.map((pattern) =>
+            pattern.id === editNasPattern.id
+                ? {...pattern, nasIdPattern: value}
+                : pattern
+        );
+        setLocalNasWhitelist(updateNasPattern);
+    };
+
     const planOptions = plans?.getPlans?.map((plan: IPlan) => ({
         label: plan?.planName,
         value: plan?.planId,
         decs: plan?.description
     }));
-
-    const [createSubscriber, {
-        loading: createSubscriberLoder,
-        error: createSubscriberError,
-        data: createSubscriberSuccess
-    }] = useMutation(CREATE_NEW_SUBSCRIBER, {
-        notifyOnNetworkStatusChange: true,
-    });
 
 
     const statusOptions = [
@@ -122,28 +176,80 @@ const SubscriberCreate: FC = () => {
             });
     };
 
+    const handleTabChange = async (e) => {
+        setActiveIndex(e.index);
+        try {
+            const subscriberId: number = await localForage.getItem("subscriberId");
+            if (e.index === 2 && subscriberId) {
+                setSubscriberId(subscriberId);
+                refetchNasWhitelist();
+            }
+        } catch (error) {
+            console.error('Error getting subscriber ID from localForage:', error);
+        }
+
+    };
+
     const togglePasswordVisibility = () => {
         setShowPassword((prevState) => !prevState);
     };
 
-    const attributeOverrideValue = (data) => (
+    const AttributeOverrideValue = (data) => (
         <InputText
             onChange={(e) => onUpdatePlanOverrideSubscriber(e.target.value, data)}
             value={data?.attributeOverrideValue}
+            placeholder={"Value not set"}
             variant="outlined"
             size="small"
         />
     );
 
-    const parameterOverrideValue = (data) => (
+
+    const NasIdPatternValue = (data) => (
         <InputText
-            onChange={(e) => onUpdatePlanOverrideSubscriber(e.target.value, data)}
-            value={data?.attributeOverrideValue}
+            onChange={(e) => onUpdateNasPattern(e.target.value, data)}
+            value={data?.nasIdPattern}
+            placeholder={"Pattern"}
             variant="outlined"
             size="small"
         />
     );
 
+
+    const ParameterOverrideValue = (data) => (
+        <InputText
+            onChange={(e) => onUpdatePlanParameterSubscriber(e.target.value, data)}
+            value={data?.parameterOverrideValue}
+            placeholder={"Value not set"}
+            variant="outlined"
+            size="small"
+        />
+    );
+
+    const handleAddNas = () => {
+        setLocalNasWhitelist((nas) => [...nas, {id: localNasWhitelist.length + 1}])
+    }
+
+
+    const ActionButtons = (rowData: any) => {
+        return (
+            <div className="flex items-center gap-2">
+                <Button
+                    icon="pi pi-trash"
+                    aria-label="Delete"
+                    onClick={() => {
+                        const nasList = [...localNasWhitelist];
+                        const index = nasList.findIndex((nas) => nas.id === rowData.id);
+                        if (index > -1) {
+                            nasList.splice(index, 1);
+                            setLocalNasWhitelist(nasList);
+                        }
+                    }}
+                    className="p-button-rounded p-button-danger"
+                />
+            </div>
+        );
+    };
 
     return (
         <React.Fragment>
@@ -256,7 +362,7 @@ const SubscriberCreate: FC = () => {
                     </div>
                     <Divider />
 
-                    <TabView>
+                    <TabView onTabChange={handleTabChange} activeIndex={activeIndex}>
                         <TabPanel header="Plan Information">
                             <div>
                                 <div
@@ -308,9 +414,9 @@ const SubscriberCreate: FC = () => {
                                         <h4>Parameter Overrides</h4>
                                         <DataTable value={localParameters ?? []}>
                                             <Column field="parameterName" header="Parameter Name"></Column>
-                                            <Column field="parameterValue" body={parameterOverrideValue}
-                                                    header="Parameter Value"></Column>
-                                            <Column field="OverrideValue" header="Override Value"></Column>
+                                            <Column field="parameterValue" header="Parameter Value"></Column>
+                                            <Column field="OverrideValue" body={ParameterOverrideValue}
+                                                    header="Override Value"></Column>
                                             <Column field="rejectOnFailure" header="Reject On Failure"></Column>
                                         </DataTable>
                                     </div>
@@ -321,7 +427,7 @@ const SubscriberCreate: FC = () => {
                                             <Column field="attributeName" header="Attribute Name"></Column>
                                             <Column field="attributeValue" header=" Attribute Value"></Column>
                                             <Column field="attributeOverrideValue" header="Override Value"
-                                                    body={attributeOverrideValue}></Column>
+                                                    body={AttributeOverrideValue}></Column>
                                         </DataTable>
                                     </div>
                                 </div>
@@ -333,9 +439,31 @@ const SubscriberCreate: FC = () => {
                             </div>
                         </TabPanel>
                         <TabPanel header="NAS Whitelist">
+                            <div style={{flex: 1}}>
+                                <div className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
+                                    <Button onClick={handleAddNas}>Add NAS</Button>
+                                </div>
 
+                                <DataTable value={localNasWhitelist ?? []}>
+                                    <Column field="nasIdPattern" header="NAS ID Pattern"
+                                            body={NasIdPatternValue}></Column>
+                                    <Column field="nasIdPattern" header="Action"
+                                            body={ActionButtons}></Column>
+                                </DataTable>
+                            </div>
                         </TabPanel>
                         <TabPanel header="Device Whitelist">
+                            <div style={{flex: 1}}>
+                                <div className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
+                                    <Button onClick={handleAddNas}>Add Device</Button>
+                                </div>
+
+                                <DataTable value={localDeviceWhitelist ?? []}>
+
+                                    <Column field="nasIdPattern" header="Action"
+                                            body={ActionButtons}></Column>
+                                </DataTable>
+                            </div>
 
                         </TabPanel>
                         <TabPanel header="Attribute Value Pair">

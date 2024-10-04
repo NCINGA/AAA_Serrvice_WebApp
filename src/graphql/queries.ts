@@ -62,6 +62,31 @@ export const GET_PLAN_ATTRIBUTES = gql`
 
 `;
 
+export const GET_NAS_WHITELIST = gql`
+    query GetNasWhiteList($subscriberId : Int!) {
+        getNasWhiteList(subscriberId: $subscriberId) {
+            id
+            subscriberId
+            nasIdPattern
+        }
+    }
+
+`;
+
+export const GET_DEVICE_WHITELIST = gql`
+    query GetDeviceWhitelist($subscriberId : Int!) {
+        getDeviceWhitelist(subscriberId: $subscriberId) {
+            id
+            subscriberId
+            MACAddress
+            description
+            status
+            createAt
+        }
+    }
+
+`;
+
 export const GET_PLAN_PARAMETERS = gql`
     query GetPlanAttribute($planId: Int!) {
         getPlanParameter(planId: $planId) {

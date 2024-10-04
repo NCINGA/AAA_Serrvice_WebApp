@@ -7,7 +7,6 @@ import client from "./graphql/apploClient";
 import {ApolloProvider} from "@apollo/client";
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
 import SubscribersView from "./Pages/SubscribersView";
-import DataView from "./Pages/DataView";
 import SubscriberCreate from "./Pages/SubscriberCreate";
 
 function App() {

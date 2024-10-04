@@ -20,8 +20,8 @@ const SubscribersView: FC = () => {
     });
 
     const onPageChange = (event) => {
-        setFirst(event.first); // Update the first index to reflect pagination
-        setRows(event.rows);   // Update the number of rows per page
+        setFirst(event.first);
+        setRows(event.rows);
     };
 
     if (loading) return <p>Loading...</p>;
