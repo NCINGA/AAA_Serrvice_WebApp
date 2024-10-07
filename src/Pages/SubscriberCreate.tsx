@@ -12,6 +12,7 @@ import {
     GET_PLAN_ATTRIBUTES,
     GET_PLAN_PARAMETERS,
     GET_PLANS,
+    GET_PROFILE_OVERRIDE_AVPS,
     GET_STATE
 } from "../graphql/queries";
 import {useMutation, useQuery} from "@apollo/client";
@@ -27,7 +28,7 @@ import {
     IPlanAttribute,
     IPlanInfo,
     IPlanParameter,
-    IProfileOverride,
+    IProfileSubscribeOverrideAVP,
     IState,
     ISubscriber,
     ISubscriberAVP,
@@ -47,7 +48,7 @@ const SubscriberCreate: FC = () => {
     const [subscriberId, setSubscriberId] = useState<number>(0);
     const [localAttributes, setLocalAttributes] = useState<IPlanAttribute[]>([]);
     const [localParameters, setLocalParameters] = useState<IPlanParameter[]>([]);
-    const [localProfileOverrides, setLocalProfileOverrides] = useState<IProfileOverride[]>([]);
+    const [localProfileSubscriberOverrideAvps, setLocalProfileSubscriberOverrideAvps] = useState<IProfileSubscribeOverrideAVP[]>([]);
     const [plan, setPlan] = useState<IPlan | null>(null);
     const [localDeviceWhitelist, setLocalDeviceWhitelist] = useState<IDeviceWhitelist[]>([]);
     const [localSubscriberAVP, setLocalSubscriberAVP] = useState<ISubscriberAVP[]>([]);
@@ -66,7 +67,7 @@ const SubscriberCreate: FC = () => {
         nasWhitelist: [],
         deviceWhitelist: [],
         subscriberAVPS: [],
-        profileOverrides: []
+        pofileOverrideSubscriberAVPs: []
     });
 
     const statusOptions = Object.values(StatusEnum).map((value: string) => ({
@@ -102,7 +103,7 @@ const SubscriberCreate: FC = () => {
         notifyOnNetworkStatusChange: true,
     });
 
-
+//fetch nasWhitelist
     const {
         loading: loadingDeviceWhitelist,
         error: fetchDeviceWhitelistError,
@@ -139,6 +140,16 @@ const SubscriberCreate: FC = () => {
         data: state,
     } = useQuery(GET_STATE, {
         notifyOnNetworkStatusChange: true
+    });
+
+    //fetch ProfileOverrideSubscriberAVPs
+    const {
+        loading: loadingPofileOverrideSubscriberAVPs,
+        error: pofileOverrideSubscriberAVPsError,
+        data: pofileOverrideSubscriberAVPs,
+    } = useQuery(GET_PROFILE_OVERRIDE_AVPS, {
+        notifyOnNetworkStatusChange: true,
+        variables: {subscriberId: 74, planId: 5}
     });
 
 
@@ -186,6 +197,13 @@ const SubscriberCreate: FC = () => {
             setLocalDeviceWhitelist(deviceWhitelist?.getDeviceWhitelist);
         }
     }, [deviceWhitelist])
+
+
+    useEffect(() => {
+        if (pofileOverrideSubscriberAVPs?.getProfileOverrideSubscriberAVPs) {
+            setLocalProfileSubscriberOverrideAvps(pofileOverrideSubscriberAVPs?.getProfileOverrideSubscriberAVPs);
+        }
+    }, [pofileOverrideSubscriberAVPs])
 
 
     const onUpdateNasPattern = (value: any, editNasPattern: INasWhitelist) => {
@@ -322,24 +340,30 @@ const SubscriberCreate: FC = () => {
     }, []);
 
     const handleSubmit = useCallback(() => {
-        formData.planAttributeOverrides = localAttributes;
-        formData.planParameterOverrides = localParameters;
-        formData.subscriberAVPS = localSubscriberAVP;
-        formData.nasWhitelist = localNasWhitelist;
-        formData.profileOverrides = localProfileOverrides;
-        console.log(formData)
+        const updatedFormData = {
+            ...formData,
+            planAttributeOverrides: localAttributes,
+            planParameterOverrides: localParameters,
+            subscriberAVPS: localSubscriberAVP,
+            nasWhitelist: localNasWhitelist,
+            pofileOverrideSubscriberAVPs: localProfileSubscriberOverrideAvps,
+            deviceWhitelist: localDeviceWhitelist,
+        };
+
+        createSubscriber({
+            variables: updatedFormData,
+        })
+            .then((response) => {
+                console.log("Subscriber created successfully:", response.data);
+            })
+            .catch((err) => {
+                console.error("Error creating subscriber:", err);
+            });
+
+        console.log(updatedFormData);
 
 
-        // createSubscriber({
-        //     variables: formData,
-        // })
-        //     .then((response) => {
-        //         console.log("Subscriber created successfully:", response.data);
-        //     })
-        //     .catch((err) => {
-        //         console.error("Error creating subscriber:", err);
-        //     });
-    }, [createSubscriber, formData]);
+    }, [createSubscriber, formData, localAttributes, localParameters, localSubscriberAVP, localNasWhitelist, localProfileSubscriberOverrideAvps, localDeviceWhitelist]);
 
     const handleTabChange = useCallback(
         async (e) => {
@@ -349,7 +373,7 @@ const SubscriberCreate: FC = () => {
     );
 
     const generateID = (): number => {
-        return Math.random() * 10;
+        return Math.floor(Math.random() * 10000);
     }
 
     const togglePasswordVisibility = useCallback(() => {
@@ -515,18 +539,18 @@ const SubscriberCreate: FC = () => {
     };
 
 
-    const ActionProfileOverrideButtons = (rowData: IProfileOverride) => {
+    const ActionProfileOverrideButtons = (rowData: IProfileSubscribeOverrideAVP) => {
         return (
             <div className="flex items-center gap-2">
                 <Button
                     icon="pi pi-trash"
                     aria-label="Delete"
                     onClick={() => {
-                        setLocalProfileOverrides((prevProfileOverride) => {
+                        setLocalProfileSubscriberOverrideAvps((prevProfileOverride) => {
                             const updatedProfileList = prevProfileOverride.filter((profile) => profile.overrideId !== rowData.overrideId);
                             setFormData((prevFormData) => ({
                                 ...prevFormData,
-                                profileOverrides: updatedProfileList,
+                                profileSubscriberOverridesAVPs: updatedProfileList,
                             }));
                             return updatedProfileList;
                         });
@@ -538,8 +562,8 @@ const SubscriberCreate: FC = () => {
     };
 
     const addProfileOverride = () => {
-        setLocalProfileOverrides((override) => [...override, {
-            overrideId: localProfileOverrides.length + 1,
+        setLocalProfileSubscriberOverrideAvps((override) => [...override, {
+            overrideId: generateID(),
             subscriberId: "",
             planId: "",
             overrideKey: "",
@@ -548,8 +572,8 @@ const SubscriberCreate: FC = () => {
         }]);
     };
 
-    const onUpdateProfileOverride = (value: any, editProfileOverride: IProfileOverride, field: string) => {
-        setLocalProfileOverrides((prevOverride) => {
+    const onUpdateProfileOverride = (value: any, editProfileOverride: IProfileSubscribeOverrideAVP, field: string) => {
+        setLocalProfileSubscriberOverrideAvps((prevOverride) => {
             const updateProfileOverrideKey = prevOverride.map((overrideProfile) =>
                 overrideProfile.overrideId === editProfileOverride.overrideId
                     ? {...overrideProfile, [field]: value}
@@ -557,7 +581,7 @@ const SubscriberCreate: FC = () => {
             );
             setFormData((prevFormData) => ({
                 ...prevFormData,
-                profileOverrides: updateProfileOverrideKey,
+                profileSubscriberOverridesAVPs: updateProfileOverrideKey,
             }));
             return updateProfileOverrideKey;
         });
@@ -565,7 +589,7 @@ const SubscriberCreate: FC = () => {
     };
 
 
-    const OverrideKey = (data: IProfileOverride) => (
+    const OverrideKey = (data: IProfileSubscribeOverrideAVP) => (
         <InputText
             onChange={(e) => onUpdateProfileOverride(e.target.value, data, "overrideKey")}
             value={data.overrideKey}
@@ -574,7 +598,7 @@ const SubscriberCreate: FC = () => {
         />
     );
 
-    const OverrideValue = (data: IProfileOverride) => (
+    const OverrideValue = (data: IProfileSubscribeOverrideAVP) => (
         <InputText
             onChange={(e) => onUpdateProfileOverride(e.target.value, data, "overrideValue")}
             value={data.overrideValue ?? ""}
@@ -583,7 +607,7 @@ const SubscriberCreate: FC = () => {
         />
     );
 
-    const ProfileState = (rowData: IProfileOverride) => (
+    const ProfileState = (rowData: IProfileSubscribeOverrideAVP) => (
         <Dropdown
             loading={loadingState}
             id="state"
@@ -807,7 +831,7 @@ const SubscriberCreate: FC = () => {
                             <div className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
                                 <Button onClick={addProfileOverride}>Add Profile Override</Button>
                             </div>
-                            <DataTable value={localProfileOverrides ?? []}>
+                            <DataTable value={localProfileSubscriberOverrideAvps ?? []}>
                                 <Column field={"overrideKey"} body={OverrideKey} header="Override Key"></Column>
                                 <Column field={"overrideValue"} header="Override Value" body={OverrideValue}></Column>
                                 <Column field={"overrideWhen"} header="Override When" body={ProfileState}></Column>

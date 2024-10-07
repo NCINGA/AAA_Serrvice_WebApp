@@ -69,7 +69,7 @@ export enum TypeEnum {
     OTHER = 'OTHER'
 }
 
-export interface IProfileOverride {
+export interface IProfileSubscribeOverrideAVP {
     overrideId?: number | string
     subscriberId?: number | string
     planId?: number | string
@@ -93,7 +93,7 @@ export interface ISubscriber {
     nasWhitelist?: INasWhitelist[];
     deviceWhitelist?: IDeviceWhitelist[];
     subscriberAVPS?: ISubscriberAVP[];
-    profileOverrides?: IProfileOverride[];
+    pofileOverrideSubscriberAVPs?: IProfileSubscribeOverrideAVP[];
 }
 
 export interface IPlanInfo {

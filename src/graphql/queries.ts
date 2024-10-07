@@ -1,4 +1,6 @@
 import {gql} from '@apollo/client';
+import {Simulate} from "react-dom/test-utils";
+import input = Simulate.input;
 
 
 export const GET_SUBSCRIBERS = gql`
@@ -24,8 +26,24 @@ export const GET_SUBSCRIBERS = gql`
     }
 `;
 
+
 export const CREATE_NEW_SUBSCRIBER = gql`
-    mutation CreateSubscriber($username: String, $password: String, $email: String, $status: String, $contactNo: String, $extId: String, $realm: String, $type: String) {
+    mutation CreateSubscriber(
+        $username: String
+        $password: String
+        $email: String
+        $status: String
+        $contactNo: String
+        $extId: String
+        $realm: String
+        $type: String
+        $planParameterOverrides: [PlanParameterInput]
+        $planAttributeOverrides: [PlanAttributeInput]
+        $nasWhitelist: [NasWhitelistInput]
+        $deviceWhitelist: [DeviceWhitelistInput]
+        $subscriberAVPS: [SubscriberAVPInput]
+        $pofileOverrideSubscriberAVPs: [ProfileOverrideSubscriberAVPsInput]
+    ) {
         createSubscriber(
             subscriber: {
                 username: $username
@@ -36,6 +54,12 @@ export const CREATE_NEW_SUBSCRIBER = gql`
                 extId: $extId
                 realm: $realm
                 type: $type
+                nasWhitelist: $nasWhitelist
+                planParameterOverrides: $planParameterOverrides
+                planAttributeOverrides: $planAttributeOverrides
+                pofileOverrideSubscriberAVPs: $pofileOverrideSubscriberAVPs
+                deviceWhitelist: $deviceWhitelist
+                subscriberAVPs: $subscriberAVPS                
             }
         )
     }
@@ -119,6 +143,20 @@ export const GET_STATE = gql`
             isAuthorized
         }
     }
+`;
+
+export const GET_PROFILE_OVERRIDE_AVPS = gql`
+    query GetPlanAttribute($subscriberId: Int!, $planId: Int!) {
+        getProfileOverrideSubscriberAVPs(subscriberId: $subscriberId, planId: $planId) {
+            overrideId
+            subscriberId
+            planId
+            overrideKey
+            overrideValue
+            overrideWhen
+        }
+    }
+
 `;
 
 
