@@ -154,7 +154,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ onToggle }) => {
 
 
     return (
-        <div className="side-menu">
+        <div className="side-menu z-3">
             <Button onClick={toggleMenu} className="toggle-button" icon="pi pi-bars" />
             <div className={`menu-container ${expanded ? 'expanded' : 'collapsed'}`}>
                 {expanded ? (

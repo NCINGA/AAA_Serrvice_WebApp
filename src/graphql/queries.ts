@@ -101,5 +101,26 @@ export const GET_PLAN_PARAMETERS = gql`
 
 `;
 
+export const GET_NAS_ATTRIBUTE_GROUP = gql`
+    query GetNasAttributeGroup {
+        getNasAttributeGroup {
+            id
+            name
+            description
+        }
+    }
+`;
+
+export const GET_STATE = gql`
+    query GetState {
+        getState {
+            state
+            description
+            isAuthorized
+        }
+    }
+`;
+
+
 
 

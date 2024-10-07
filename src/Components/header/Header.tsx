@@ -67,7 +67,7 @@ const Header: FC = () => {
     );
 
     return (<React.Fragment>
-        <div className="bg-blue-800 fixed w-full h-4rem">
+        <div className="bg-blue-800 fixed w-full h-4rem z-3">
 
             <Menubar className={"bg-blue-800 h-4rem border-none rounded-none"} model={[]} start={<span className={'text-white'}>Web Console</span>} end={end}/>
         </div>
