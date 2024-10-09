@@ -1,6 +1,4 @@
 import {gql} from '@apollo/client';
-import {Simulate} from "react-dom/test-utils";
-import input = Simulate.input;
 
 
 export const GET_SUBSCRIBERS = gql`
@@ -41,7 +39,7 @@ export const CREATE_NEW_SUBSCRIBER = gql`
         $planAttributeOverrides: [PlanAttributeInput]
         $nasWhitelist: [NasWhitelistInput]
         $deviceWhitelist: [DeviceWhitelistInput]
-        $subscriberAVPS: [SubscriberAVPInput]
+        $subscriberAVPs: [SubscriberAVPInput]
         $pofileOverrideSubscriberAVPs: [ProfileOverrideSubscriberAVPsInput]
     ) {
         createSubscriber(
@@ -59,9 +57,32 @@ export const CREATE_NEW_SUBSCRIBER = gql`
                 planAttributeOverrides: $planAttributeOverrides
                 pofileOverrideSubscriberAVPs: $pofileOverrideSubscriberAVPs
                 deviceWhitelist: $deviceWhitelist
-                subscriberAVPs: $subscriberAVPS                
+                subscriberAVPs: $subscriberAVPs
             }
         )
+    }
+`;
+export const UPDATE_SUBSCRIBER_PARAMETERS = gql`
+    mutation updateSubscriberParameters(
+        $subscriberId: Int!,
+        $planId: Int!,
+        $subscriber: SubscriberInput
+    ) {
+        updateSubscriberParameters(
+            subscriberId: $subscriberId,
+            planId: $planId,
+            subscriber: $subscriber
+        )
+    }
+`;
+
+export const APPLY_PLAN = gql`
+    mutation applyPlan(
+        $subscriberId: Int!,
+        $planId: Int!,
+        $state: String!
+    ) {
+        applyPlan(subscriberId: $subscriberId, planId:  $planId, state: $state)
     }
 `;
 
@@ -74,9 +95,9 @@ export const GET_PLANS = gql`
 `;
 
 export const GET_PLAN_ATTRIBUTES = gql`
-    query GetPlanAttribute($planId: Int!) {
-        getPlanAttribute(planId: $planId) {
-            id
+    query GetPlanAttribute($subscriberId: Int!, $planId: Int!) {
+        getPlanAttribute(subscriberId: $subscriberId, planId: $planId) {
+            overrideId
             planId
             attributeName
             attributeValue
@@ -111,14 +132,14 @@ export const GET_DEVICE_WHITELIST = gql`
 
 `;
 
+
 export const GET_PLAN_PARAMETERS = gql`
-    query GetPlanAttribute($planId: Int!) {
-        getPlanParameter(planId: $planId) {
-            parameterId
+    query GetPlanAttribute($subscriberId: Int!, $planId: Int!) {
+        getPlanParameter(subscriberId: $subscriberId, planId: $planId) {
+            overrideId
             planId
             parameterName
             parameterValue
-            rejectOnFailure
             parameterOverrideValue
         }
     }
@@ -144,7 +165,6 @@ export const GET_STATE = gql`
         }
     }
 `;
-
 export const GET_PROFILE_OVERRIDE_AVPS = gql`
     query GetPlanAttribute($subscriberId: Int!, $planId: Int!) {
         getProfileOverrideSubscriberAVPs(subscriberId: $subscriberId, planId: $planId) {

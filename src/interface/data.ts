@@ -6,6 +6,7 @@ export interface IPlan {
 }
 
 export interface IPlanAttribute {
+    overrideId?: number;
     attributeName?: string;
     attributeOverrideValue?: string;
     attributeValue?: string;
@@ -14,13 +15,12 @@ export interface IPlanAttribute {
 }
 
 export interface IPlanParameter {
-    parameterId?: number;
+    overrideId?: number;
     parameterName?: string;
     parameterOverrideValue?: string;
     parameterValue?: string;
     id?: number;
     planId?: number;
-    rejectOnFailure?: number;
 }
 
 export interface INasWhitelist {
@@ -70,9 +70,9 @@ export enum TypeEnum {
 }
 
 export interface IProfileSubscribeOverrideAVP {
-    overrideId?: number | string
-    subscriberId?: number | string
-    planId?: number | string
+    overrideId?: number
+    subscriberId?: number
+    planId?: number
     overrideKey?: string
     overrideValue?: string
     overrideWhen?: string
@@ -92,7 +92,7 @@ export interface ISubscriber {
     planAttributeOverrides?: IPlanAttribute[];
     nasWhitelist?: INasWhitelist[];
     deviceWhitelist?: IDeviceWhitelist[];
-    subscriberAVPS?: ISubscriberAVP[];
+    subscriberAVPs?: ISubscriberAVP[];
     pofileOverrideSubscriberAVPs?: IProfileSubscribeOverrideAVP[];
 }
 

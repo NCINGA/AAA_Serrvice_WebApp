@@ -12,7 +12,7 @@ import SubscriberCreate from "./Pages/SubscriberCreate";
 function App() {
     const [isMenuExpanded, setIsMenuExpanded] = useState(true);
 
-    const handleMenuToggle = (isExpanded) => {
+    const handleMenuToggle = (isExpanded: any) => {
         setIsMenuExpanded(isExpanded);
     };
 
@@ -25,7 +25,7 @@ function App() {
                         <SideMenu onToggle={handleMenuToggle}/>
                         <div className={`${isMenuExpanded ? 'expanded' : 'collapsed'}`}>
                         </div>
-                        <div class={"main"}>
+                        <div className={"main"}>
                             <div className={"content"}>
                                 <Router>
                                     <Routes>

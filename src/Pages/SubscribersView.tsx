@@ -19,7 +19,7 @@ const SubscribersView: FC = () => {
         notifyOnNetworkStatusChange: true,
     });
 
-    const onPageChange = (event) => {
+    const onPageChange = (event: any) => {
         setFirst(event.first);
         setRows(event.rows);
     };

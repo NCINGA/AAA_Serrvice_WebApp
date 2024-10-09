@@ -2,25 +2,25 @@ import { ApolloClient, createHttpLink, InMemoryCache, split, ApolloLink } from '
 import { getMainDefinition } from '@apollo/client/utilities';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
-import { persistCache } from 'apollo-cache-persist';
-import localForage from 'localforage';
+// import { persistCache } from 'apollo-cache-persist';
+// import localForage from 'localforage';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
 
 // Token for authorization
 const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZXhwIjoxNzI0Mjk2MjYwLCJzY29wZSI6Im1lc3NhZ2U6cmVhZCJ9.WcUZOcyMjlQQO_VTXvLTlnM5bUuuXJNiVgNI1EjHHSs";
 
-// HTTP link for queries and mutations
+
 const httpLink = createHttpLink({
-    uri: '/graphql', // Modify this URI to your GraphQL server's endpoint
+    uri: '/graphql',
 });
 
 // WebSocket link for subscriptions
 const wsLink = new GraphQLWsLink(
     createClient({
-        url: '/graphql', // Adjust WebSocket URL to your GraphQL server's WebSocket endpoint
+        url: '/graphql', //
         connectionParams: {
             headers: {
-                Authorization: `Bearer ${token}`, // Same token for WebSocket connection
+                Authorization: `Bearer ${token}`,
             },
         },
     })
@@ -39,22 +39,22 @@ const splitLink = split(
     httpLink // HTTP for queries and mutations
 );
 
-// Remove __typename from all variables in mutations
+
 const removeTypenameLink = removeTypenameFromVariables();
 
-// Persist the cache using localForage
-const cache = new InMemoryCache();
-(async () => {
-    await persistCache({
-        cache,
-        storage: localForage,
-    });
-})();
 
-// Combine the links (removeTypenameLink and splitLink)
+const cache = new InMemoryCache();
+// (async () => {
+//     await persistCache({
+//         cache,
+//         storage: localForage,
+//     });
+// })();
+
+
 const combinedLink = ApolloLink.from([removeTypenameLink, splitLink]);
 
-// Apollo client setup
+
 const client = new ApolloClient({
     link: combinedLink,
     cache: cache,
