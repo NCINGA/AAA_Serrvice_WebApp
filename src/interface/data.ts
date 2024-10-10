@@ -1,3 +1,5 @@
+
+
 export interface IPlan {
     planId?: string;
     planType?: string;
@@ -79,6 +81,7 @@ export interface IProfileSubscribeOverrideAVP {
 }
 
 export interface ISubscriber {
+    subscriberId?: number
     username?: string;
     password?: string;
     status?: StatusEnum | null;

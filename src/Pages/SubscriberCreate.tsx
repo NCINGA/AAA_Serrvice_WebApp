@@ -5,7 +5,7 @@ import {Dropdown} from "primereact/dropdown";
 import {Divider} from "primereact/divider";
 import {TabPanel, TabView} from "primereact/tabview";
 import {Stepper} from 'primereact/stepper';
-import {useNavigate} from "react-router-dom"
+import {useLocation, useNavigate} from "react-router-dom"
 import {StepperPanel} from 'primereact/stepperpanel';
 import {
     APPLY_PLAN,
@@ -16,11 +16,12 @@ import {
     GET_PLAN_ATTRIBUTES,
     GET_PLAN_PARAMETERS,
     GET_PLANS,
-    GET_PROFILE_OVERRIDE_AVPS,
+    GET_PROFILE_OVERRIDE_AVPs,
     GET_STATE,
+    GET_SUBSCRIBER_BY_ID,
     UPDATE_SUBSCRIBER_PARAMETERS
 } from "../graphql/queries";
-import {useMutation, useQuery} from "@apollo/client";
+import {useLazyQuery, useMutation} from "@apollo/client";
 import {InputIcon} from "primereact/inputicon";
 import {IconField} from "primereact/iconfield";
 import {ProgressSpinner} from "primereact/progressspinner";
@@ -47,6 +48,7 @@ import {Messages} from "primereact/messages";
 
 const SubscriberCreate: FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const stepperRef: any = useRef(null);
     const [showPassword, setShowPassword] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -55,9 +57,10 @@ const SubscriberCreate: FC = () => {
     const [localAttributes, setLocalAttributes] = useState<IPlanAttribute[]>([]);
     const [localParameters, setLocalParameters] = useState<IPlanParameter[]>([]);
     const [localProfileSubscriberOverrideAvps, setLocalProfileSubscriberOverrideAvps] = useState<IProfileSubscribeOverrideAVP[]>([]);
-    const [plan, setPlan] = useState<IPlan | null>(null);
+    const [planId, setPlanId] = useState<number>(0);
     const [localDeviceWhitelist, setLocalDeviceWhitelist] = useState<IDeviceWhitelist[]>([]);
     const [localSubscriberAVP, setLocalSubscriberAVP] = useState<ISubscriberAVP[]>([]);
+    const [planData, setPlanData] = useState<IPlan>(null);
     const [formData, setFormData] = useState<ISubscriber>({
         username: "",
         password: "",
@@ -77,53 +80,76 @@ const SubscriberCreate: FC = () => {
     });
     const msgs: any = useRef(null);
 
-    //call graphql endpoint
+    const getQueryParams = (search: any) => {
+        return new URLSearchParams(search);
+    };
 
-    //loading plan
-    const {loading: loadingPlans, data: plans} = useQuery(GET_PLANS, {
+    const queryParams = getQueryParams(location.search);
+    const subId = queryParams.get('sub');
+
+    const [getState, {loading: loadingState, data: state}] = useLazyQuery(GET_STATE, {
+        notifyOnNetworkStatusChange: true,
+        fetchPolicy: 'network-only'
+    });
+
+    const [getSubscriberById, {loading: loadingSubscriber, data: subscriber}] = useLazyQuery(GET_SUBSCRIBER_BY_ID, {
         notifyOnNetworkStatusChange: true,
         fetchPolicy: "network-only",
     });
-    const {
-        data: deviceWhitelist,
-    } = useQuery(GET_DEVICE_WHITELIST, {
+
+    const [getPlan, {loading: loadingPlans, data: plans}] = useLazyQuery(GET_PLANS, {
+        notifyOnNetworkStatusChange: true,
+        fetchPolicy: "network-only",
+    });
+
+    const [getNasWhiteList, {data: nasWhitelist}] = useLazyQuery(GET_NAS_WHITELIST, {
         notifyOnNetworkStatusChange: true,
         variables: {subscriberId: subscriberId},
         fetchPolicy: 'network-only'
     });
 
-
-    const {
-        data: nasWhitelist,
-    } = useQuery(GET_NAS_WHITELIST, {
+    const [getDeviceWhitelist, {data: deviceWhitelist}] = useLazyQuery(GET_DEVICE_WHITELIST, {
         notifyOnNetworkStatusChange: true,
         variables: {subscriberId: subscriberId},
         fetchPolicy: 'network-only'
     });
 
-    const {
+    const [getPlanAttribute, {data: attributes, refetch: refetchPlanAttribute}] = useLazyQuery(GET_PLAN_ATTRIBUTES, {
+        variables: {subscriberId: subscriberId, planId: formData.planId},
+        notifyOnNetworkStatusChange: true,
+        fetchPolicy: 'network-only'
+    });
+
+    const [getPlanParameter, {data: parameters, refetch: refetchPlanParameter}] = useLazyQuery(GET_PLAN_PARAMETERS, {
+        variables: {subscriberId: subscriberId, planId: formData.planId},
+        notifyOnNetworkStatusChange: true,
+        fetchPolicy: 'network-only'
+    });
+
+    const [getNASAttribute, {
         loading: loadingNASAttributeGroup,
-        data: nasAttributeGroup,
-    } = useQuery(GET_NAS_ATTRIBUTE_GROUP, {
+        data: nasAttributeGroup
+    }] = useLazyQuery(GET_NAS_ATTRIBUTE_GROUP, {
         notifyOnNetworkStatusChange: true,
         fetchPolicy: 'network-only'
     });
 
-
-    const {
-        loading: loadingState,
-        data: state,
-    } = useQuery(GET_STATE, {
+    const [getProfileOverrideAVPs, {data: profileOverrideSubscriberAVPs}] = useLazyQuery(GET_PROFILE_OVERRIDE_AVPs, {
         notifyOnNetworkStatusChange: true,
+        variables: {subscriberId: subscriberId, planId: planId},
         fetchPolicy: 'network-only'
     });
-
-    const {data: profileOverrideSubscriberAVPs} = useQuery(GET_PROFILE_OVERRIDE_AVPS, {
-        notifyOnNetworkStatusChange: true,
-        variables: {subscriberId: subscriberId, planId: plan?.planId},
-        fetchPolicy: 'network-only'
-    });
-
+    const [applyPlan, {data: applyPlanSuccess}] = useMutation(APPLY_PLAN, {
+            notifyOnNetworkStatusChange: true,
+            onCompleted: () => {
+                getPlanParameter();
+                getPlanAttribute();
+            },
+            onError: (error) => {
+                console.log(error)
+            }
+        }
+    );
 
     const [createSubscriber, {
         loading: createSubscriberLoader,
@@ -145,23 +171,39 @@ const SubscriberCreate: FC = () => {
         }
     );
 
-    const [applyPlan, {
-    }] = useMutation(
-        APPLY_PLAN,
-        {
-            notifyOnNetworkStatusChange: true,
-            onCompleted: () => {
-                refetchPlanParameter();
-                refetchPlanAttribute();
-            },
-            onError: (error) => {
-                console.log(error)
-            }
+
+    useEffect(() => {
+        getPlan();
+        getState();
+    }, [getPlan, getState]);
+
+    useEffect(() => {
+        if (subId) {
+            const id = Number.parseInt(subId);
+            setSubscriberId(id);
+            getSubscriberById({variables: {subscriberId: id}});
+            getNasWhiteList({variables: {subscriberId: id}});
+            getDeviceWhitelist({variables: {subscriberId: id}});
         }
-    );
+    }, [subId, getSubscriberById, getNasWhiteList, getDeviceWhitelist]);
 
 
+    useEffect(() => {
+        setFormData({
+            ...formData,
+            username: subscriber?.getSubscriberById?.username,
+            password: subscriber?.getSubscriberById?.password,
+            status: subscriber?.getSubscriberById?.status,
+            contactNo: subscriber?.getSubscriberById?.contactNo,
+            email: subscriber?.getSubscriberById?.email,
+            extId: subscriber?.getSubscriberById?.extId,
+            realm: subscriber?.getSubscriberById?.realm,
+            type: subscriber?.getSubscriberById?.type,
+            planId: subscriber?.getSubscriberById?.planId
+        });
 
+
+    }, [subscriber]);
 
     const statusOptions = Object.values(StatusEnum).map((value: string) => ({
         label: value,
@@ -181,17 +223,6 @@ const SubscriberCreate: FC = () => {
         description: plan?.description
     }));
 
-    const {data: attributes, refetch: refetchPlanAttribute} = useQuery(GET_PLAN_ATTRIBUTES, {
-        skip: !formData.planId,
-        variables: {subscriberId: subscriberId, planId: formData.planId},
-        notifyOnNetworkStatusChange: true,
-    });
-
-    const {data: parameters, refetch: refetchPlanParameter} = useQuery(GET_PLAN_PARAMETERS, {
-        skip: !formData.planId,
-        variables: {subscriberId: subscriberId, planId: formData.planId},
-        notifyOnNetworkStatusChange: true,
-    });
 
     const stateOptions = state?.getState?.map((state: IState) => ({
         label: state.state,
@@ -345,10 +376,11 @@ const SubscriberCreate: FC = () => {
     };
 
 
-    const handlePlanApply = (e: any) => {
+    const handleChangePlan = (e: any) => {
         handleInputChange(e, 'planId');
         const selectedPlan: IPlan = plans?.getPlans.find((plan: IPlan) => plan.planId === e.value);
-        setPlan(selectedPlan || null);
+        setPlanId(selectedPlan.planId as Number);
+        setPlanData(selectedPlan);
         applyPlan({
             variables: {subscriberId: subscriberId, planId: selectedPlan.planId, state: "ACTIVE"}
         });
@@ -424,14 +456,14 @@ const SubscriberCreate: FC = () => {
         updateSubscriberParameters({
             variables: {
                 subscriberId: subscriberId,
-                planId: plan?.planId,
+                planId: planId,
                 subscriber: updatedFormData,
             },
         })
             .then(() => {
-                refetchPlanParameter();
-                refetchPlanAttribute();
-                navigate("/subscribers", {replace: true});
+                // getPlanParameter();
+                // getPlanAttribute();
+                // navigate("/subscribers", {replace: true});
 
             })
             .catch((err) => {
@@ -651,7 +683,7 @@ const SubscriberCreate: FC = () => {
         setLocalProfileSubscriberOverrideAvps((override) => [...override, {
             overrideId: generateID(),
             subscriberId: subscriberId,
-            planId: Number.parseInt(plan?.planId as string),
+            planId: Number.parseInt(planId as string),
             overrideKey: "",
             overrideValue: "",
             overrideWhen: ""
@@ -826,7 +858,6 @@ const SubscriberCreate: FC = () => {
                     </StepperPanel>
                     <StepperPanel header="Parameter Details">
                         <TabView onTabChange={handleTabChange} activeIndex={activeIndex}>
-
                             <TabPanel header="Plan Information">
                                 <div>
                                     <div className="p-fluid"
@@ -843,14 +874,14 @@ const SubscriberCreate: FC = () => {
                                                 id="type"
                                                 value={formData.planId ?? ""}
                                                 options={planOptions}
-                                                onChange={handlePlanApply}
+                                                onChange={handleChangePlan}
                                                 placeholder="Select Plan"
                                             />
                                         </div>
                                     </div>
 
                                     <Card title="Description">
-                                        <p className="m-0">{plan?.description ?? ""}</p>
+                                        <p className="m-0">{planData?.description ?? ""}</p>
                                     </Card>
 
                                     <Divider/>

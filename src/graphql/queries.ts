@@ -8,6 +8,7 @@ export const GET_SUBSCRIBERS = gql`
             size
             totalElements
             content {
+                planId
                 subscriberId
                 username
                 status
@@ -165,8 +166,8 @@ export const GET_STATE = gql`
         }
     }
 `;
-export const GET_PROFILE_OVERRIDE_AVPS = gql`
-    query GetPlanAttribute($subscriberId: Int!, $planId: Int!) {
+export const GET_PROFILE_OVERRIDE_AVPs = gql`
+    query GetProfileOverrideSubscriberAVPs($subscriberId: Int!, $planId: Int!) {
         getProfileOverrideSubscriberAVPs(subscriberId: $subscriberId, planId: $planId) {
             overrideId
             subscriberId
@@ -178,6 +179,26 @@ export const GET_PROFILE_OVERRIDE_AVPS = gql`
     }
 
 `;
+
+export const GET_SUBSCRIBER_BY_ID = gql`
+    query GetSubscriberById($subscriberId: Int!) {
+        getSubscriberById(subscriberId: $subscriberId) {
+            subscriberId
+            planId
+            username
+            password
+            status
+            contactNo
+            email
+            extId
+            createdDate
+            updatedTime
+            realm
+            type
+        }
+    }
+
+`
 
 
 

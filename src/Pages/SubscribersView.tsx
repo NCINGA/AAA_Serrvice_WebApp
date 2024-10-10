@@ -6,13 +6,16 @@ import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
 import {Skeleton} from "primereact/skeleton";
 import {Paginator} from "primereact/paginator";
+import { useNavigate } from 'react-router-dom';
+import {ISubscriber} from "../interface/data";
 
 const SubscribersView: FC = () => {
-    const [first, setFirst] = useState(0); // 0-based index for the first item
-    const [rows, setRows] = useState(10); // Default rows per page
+    const navigate = useNavigate();
+    const [first, setFirst] = useState(0);
+    const [rows, setRows] = useState(10);
 
-    const page = Math.floor(first / rows) + 1; // Adjust to 1-based page
-    const size = rows; // Rows to fetch
+    const page = Math.floor(first / rows) + 1;
+    const size = rows;
 
     const {loading, error, data} = useQuery(GET_SUBSCRIBERS, {
         variables: {page, size},
@@ -27,20 +30,20 @@ const SubscribersView: FC = () => {
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error.message}</p>;
 
-    const handleEdit = (id: string) => {
-        console.log("Edit user with ID:", id);
+    const handleEdit = (subscriber: ISubscriber) => {
+        navigate(`/subscriber-create?sub=${subscriber.subscriberId}`, {replace: false})
     };
 
-    const handleDelete = (id: string) => {
-        console.log("Delete user with ID:", id);
+    const handleDelete = (subscriber: ISubscriber) => {
+        console.log("Delete user with ID:", subscriber.subscriberId);
     };
 
     const ActionButtons = (rowData: any) => {
         return (
             <div className="flex items-center gap-2">
-                <Button icon="pi pi-file-edit" aria-label="Edit" onClick={() => handleEdit(rowData.id)}
+                <Button icon="pi pi-file-edit" aria-label="Edit" onClick={() => handleEdit(rowData)}
                         className="p-button-rounded p-button-info"/>
-                <Button icon="pi pi-trash" aria-label="Delete" onClick={() => handleDelete(rowData.id)}
+                <Button icon="pi pi-trash" aria-label="Delete" onClick={() => handleDelete(rowData)}
                         className="p-button-rounded p-button-danger"/>
             </div>
         );
