@@ -6,8 +6,8 @@ import Header from "./Components/header/Header";
 import client from "./graphql/apploClient";
 import {ApolloProvider} from "@apollo/client";
 import {BrowserRouter as Router, Route, Routes} from "react-router-dom";
-import SubscribersView from "./Pages/SubscribersView";
-import SubscriberCreate from "./Pages/SubscriberCreate";
+import ViewSubscribers from "./Pages/ViewSubscribers";
+import ManageSubscriber from "./Pages/ManageSubscriber";
 
 function App() {
     const [isMenuExpanded, setIsMenuExpanded] = useState(true);
@@ -29,8 +29,8 @@ function App() {
                             <div className={"content"}>
                                 <Router>
                                     <Routes>
-                                        <Route path="/subscribers" element={<SubscribersView/>}/>
-                                        <Route path="/subscriber-create" element={<SubscriberCreate/>}/>
+                                        <Route path="/view-subscribers" element={<ViewSubscribers/>}/>
+                                        <Route path="/manage-subscriber" element={<ManageSubscriber/>}/>
 
                                     </Routes>
                                 </Router>

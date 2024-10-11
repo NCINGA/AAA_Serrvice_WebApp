@@ -19,6 +19,7 @@ import {
     GET_PROFILE_OVERRIDE_AVPs,
     GET_STATE,
     GET_SUBSCRIBER_BY_ID,
+    UPDATE_SUBSCRIBER,
     UPDATE_SUBSCRIBER_PARAMETERS
 } from "../graphql/queries";
 import {useLazyQuery, useMutation} from "@apollo/client";
@@ -46,7 +47,7 @@ import {Column} from "primereact/column";
 import {InputSwitch} from "primereact/inputswitch";
 import {Messages} from "primereact/messages";
 
-const SubscriberCreate: FC = () => {
+const ManageSubscriber: FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const stepperRef: any = useRef(null);
@@ -85,7 +86,8 @@ const SubscriberCreate: FC = () => {
     };
 
     const queryParams = getQueryParams(location.search);
-    const subId = queryParams.get('sub');
+    const subId = queryParams.get('subscriber');
+    const mode = queryParams.get('mode');
 
     const [getState, {loading: loadingState, data: state}] = useLazyQuery(GET_STATE, {
         notifyOnNetworkStatusChange: true,
@@ -95,11 +97,26 @@ const SubscriberCreate: FC = () => {
     const [getSubscriberById, {loading: loadingSubscriber, data: subscriber}] = useLazyQuery(GET_SUBSCRIBER_BY_ID, {
         notifyOnNetworkStatusChange: true,
         fetchPolicy: "network-only",
+        onCompleted: () => {
+
+        },
+        onError: (error) => {
+            console.log(error)
+        }
     });
 
     const [getPlan, {loading: loadingPlans, data: plans}] = useLazyQuery(GET_PLANS, {
         notifyOnNetworkStatusChange: true,
         fetchPolicy: "network-only",
+        onCompleted: () => {
+            if (mode === "edit") {
+                // getPlanParameter();
+                // getPlanAttribute();
+            }
+        },
+        onError: (error) => {
+            console.log(error)
+        }
     });
 
     const [getNasWhiteList, {data: nasWhitelist}] = useLazyQuery(GET_NAS_WHITELIST, {
@@ -136,18 +153,11 @@ const SubscriberCreate: FC = () => {
 
     const [getProfileOverrideAVPs, {data: profileOverrideSubscriberAVPs}] = useLazyQuery(GET_PROFILE_OVERRIDE_AVPs, {
         notifyOnNetworkStatusChange: true,
-        variables: {subscriberId: subscriberId, planId: planId},
+        variables: {subscriberId: subscriberId, planId: formData.planId},
         fetchPolicy: 'network-only'
     });
     const [applyPlan, {data: applyPlanSuccess}] = useMutation(APPLY_PLAN, {
             notifyOnNetworkStatusChange: true,
-            onCompleted: () => {
-                getPlanParameter();
-                getPlanAttribute();
-            },
-            onError: (error) => {
-                console.log(error)
-            }
         }
     );
 
@@ -162,6 +172,18 @@ const SubscriberCreate: FC = () => {
         }
     );
 
+    const [updateSubscriber, {
+        loading: updateSubscriberLoader,
+        error: updateSubscriberError,
+        data: updateSubscriberSuccess
+    }] = useMutation(
+        UPDATE_SUBSCRIBER,
+        {
+            notifyOnNetworkStatusChange: true,
+        }
+    );
+
+
     const [updateSubscriberParameters, {
         loading: updateSubscriberParametersLoader
     }] = useMutation(
@@ -175,13 +197,28 @@ const SubscriberCreate: FC = () => {
     useEffect(() => {
         getPlan();
         getState();
-    }, [getPlan, getState]);
+        getNASAttribute();
+        getProfileOverrideAVPs()
+    }, [getPlan, getState, getProfileOverrideAVPs]);
 
     useEffect(() => {
         if (subId) {
             const id = Number.parseInt(subId);
             setSubscriberId(id);
-            getSubscriberById({variables: {subscriberId: id}});
+            getSubscriberById({variables: {subscriberId: id}}).then((response) => {
+                getPlanParameter({
+                    variables: {
+                        subscriberId: id,
+                        planId: response.data.getSubscriberById?.planId
+                    }
+                });
+                getPlanAttribute({
+                    variables: {
+                        subscriberId: id,
+                        planId: response.data.getSubscriberById?.planId
+                    }
+                });
+            });
             getNasWhiteList({variables: {subscriberId: id}});
             getDeviceWhitelist({variables: {subscriberId: id}});
         }
@@ -239,9 +276,6 @@ const SubscriberCreate: FC = () => {
         label: value,
         value: value
     }));
-
-
-    //set local state
 
     useEffect(() => {
         if (attributes?.getPlanAttribute) {
@@ -383,23 +417,37 @@ const SubscriberCreate: FC = () => {
         setPlanData(selectedPlan);
         applyPlan({
             variables: {subscriberId: subscriberId, planId: selectedPlan.planId, state: "ACTIVE"}
-        });
+        }).then((response) => {
+            getPlanParameter({subscriberId: subscriberId, planId: selectedPlan.planId});
+            getPlanAttribute({subscriberId: subscriberId, planId: selectedPlan.planId});
+        }).catch((error) => console.error(error));
 
     }
 
     const handlingSubscriberSave = useCallback(() => {
         msgs.current.clear();
-        createSubscriber({
-            variables: formData,
-        })
-            .then((response) => {
-                console.log("Subscriber created successfully:", response);
+        if (mode === "edit") {
+            updateSubscriber({
+                variables: {subscriberId: subscriberId, subscriber: formData},
             })
-            .catch((err) => {
-                console.error("Error creating subscriber:", err);
-            });
-
-    }, [formData, createSubscriber]);
+                .then((response) => {
+                    console.log("Subscriber update successfully:", response);
+                })
+                .catch((err) => {
+                    console.error("Error creating subscriber:", err);
+                });
+        } else {
+            createSubscriber({
+                variables: formData,
+            })
+                .then((response) => {
+                    console.log("Subscriber created successfully:", response);
+                })
+                .catch((err) => {
+                    console.error("Error creating subscriber:", err);
+                });
+        }
+    }, [formData, createSubscriber, updateSubscriber]);
 
 
     useEffect(() => {
@@ -436,6 +484,25 @@ const SubscriberCreate: FC = () => {
         }
     }, [createSubscriberSuccess])
 
+    useEffect(() => {
+        if (updateSubscriberSuccess !== undefined) {
+            if (updateSubscriberSuccess?.updateSubscriber?.responseCode === 4) {
+                msgs.current.show([
+                    {
+                        severity: 'success',
+                        summary: 'Success',
+                        detail: 'Subscriber updated successfully',
+                        sticky: true,
+                        closable: false
+                    }
+                ]);
+                setTimeout(() => {
+                    stepperRef.current.nextCallback()
+                }, 2000)
+            }
+        }
+    }, [updateSubscriberSuccess])
+
     const handleInputChange = useCallback((e: any, field: any) => {
         const value = e.target ? e.target.value : e.value;
         setFormData((prevData) => ({...prevData, [field]: value}));
@@ -456,15 +523,11 @@ const SubscriberCreate: FC = () => {
         updateSubscriberParameters({
             variables: {
                 subscriberId: subscriberId,
-                planId: planId,
+                planId: formData.planId,
                 subscriber: updatedFormData,
             },
         })
             .then(() => {
-                // getPlanParameter();
-                // getPlanAttribute();
-                // navigate("/subscribers", {replace: true});
-
             })
             .catch((err) => {
                 console.error("Error updating subscriber:", err);
@@ -760,7 +823,7 @@ const SubscriberCreate: FC = () => {
                 <div style={{ flexBasis: '100%' }}>
                 <Stepper ref={stepperRef}>
                     <StepperPanel header="Basic Details">
-                        {createSubscriberLoader || updateSubscriberParametersLoader && (
+                        {createSubscriberLoader || updateSubscriberParametersLoader || updateSubscriberLoader && (
                             <div
                                 style={{
                                     backgroundColor: "rgba(255, 255, 255, 0.4)",
@@ -878,6 +941,7 @@ const SubscriberCreate: FC = () => {
                                                 placeholder="Select Plan"
                                             />
                                         </div>
+                                        <Button label="Small" icon="pi pi-check" size="small" />
                                     </div>
 
                                     <Card title="Description">
@@ -1009,4 +1073,4 @@ const SubscriberCreate: FC = () => {
     );
 };
 
-export default SubscriberCreate;
+export default ManageSubscriber;

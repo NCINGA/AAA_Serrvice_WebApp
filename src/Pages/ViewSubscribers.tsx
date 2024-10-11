@@ -9,7 +9,7 @@ import {Paginator} from "primereact/paginator";
 import { useNavigate } from 'react-router-dom';
 import {ISubscriber} from "../interface/data";
 
-const SubscribersView: FC = () => {
+const ViewSubscribers: FC = () => {
     const navigate = useNavigate();
     const [first, setFirst] = useState(0);
     const [rows, setRows] = useState(10);
@@ -31,7 +31,7 @@ const SubscribersView: FC = () => {
     if (error) return <p>Error: {error.message}</p>;
 
     const handleEdit = (subscriber: ISubscriber) => {
-        navigate(`/subscriber-create?sub=${subscriber.subscriberId}`, {replace: false})
+        navigate(`/manage-subscriber?subscriber=${subscriber.subscriberId}&mode=edit`, {replace: false})
     };
 
     const handleDelete = (subscriber: ISubscriber) => {
@@ -80,4 +80,4 @@ const SubscribersView: FC = () => {
     );
 };
 
-export default SubscribersView;
+export default ViewSubscribers;

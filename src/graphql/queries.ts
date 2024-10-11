@@ -63,6 +63,20 @@ export const CREATE_NEW_SUBSCRIBER = gql`
         )
     }
 `;
+
+export const UPDATE_SUBSCRIBER = gql`
+    mutation UpdateSubscriber(
+        $subscriberId: Int!,
+        $subscriber: SubscriberInput
+    ) {
+        updateSubscriber(
+            subscriberId:  $subscriberId
+            subscriber: $subscriber
+        )
+    }
+`;
+
+
 export const UPDATE_SUBSCRIBER_PARAMETERS = gql`
     mutation updateSubscriberParameters(
         $subscriberId: Int!,
@@ -135,7 +149,7 @@ export const GET_DEVICE_WHITELIST = gql`
 
 
 export const GET_PLAN_PARAMETERS = gql`
-    query GetPlanAttribute($subscriberId: Int!, $planId: Int!) {
+    query getPlanParameter($subscriberId: Int!, $planId: Int!) {
         getPlanParameter(subscriberId: $subscriberId, planId: $planId) {
             overrideId
             planId
