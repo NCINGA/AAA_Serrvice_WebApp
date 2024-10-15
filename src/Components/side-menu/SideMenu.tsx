@@ -24,7 +24,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ onToggle }) => {
                 {
                     label: 'Add',
                     icon: 'pi pi-fw pi-plus',
-                    command: () => navigate('/manage-subscriber')
+                    command: () => navigate('/manage-subscriber?mode=new')
                 },
                 {
                     label: 'View',

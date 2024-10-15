@@ -68,6 +68,7 @@ const ManageSubscriber: FC = () => {
     const stepperRef: any = useRef(null);
     const [showPassword, setShowPassword] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [activeStep, setActiveStep] = useState<boolean>(true);
     const [localNasWhitelist, setLocalNasWhitelist] = useState<INasWhitelist[]>([]);
     const [subscriberId, setSubscriberId] = useState<number>(0);
     const [localAttributes, setLocalAttributes] = useState<IPlanAttribute[]>([]);
@@ -604,7 +605,6 @@ const ManageSubscriber: FC = () => {
                     severity: 'error',
                     summary: 'Error',
                     detail: createSubscriberError?.graphQLErrors?.[0]?.message ?? "",
-                    sticky: true,
                     closable: false
                 }
             ]);
@@ -614,6 +614,7 @@ const ManageSubscriber: FC = () => {
     useEffect(() => {
         if (createSubscriberSuccess !== undefined) {
             if (createSubscriberSuccess?.createSubscriber?.responseCode === 3) {
+                setActiveStep(false);
                 toast.current.show({
                     severity: 'info',
                     summary: 'Success',
@@ -664,6 +665,7 @@ const ManageSubscriber: FC = () => {
         if (updateSubscriberSuccess !== undefined) {
             if (updateSubscriberSuccess?.updateSubscriber?.responseCode === 4) {
                 stepperRef.current.nextCallback();
+                setActiveStep(false);
             }
         }
     }, [updateSubscriberSuccess])
@@ -675,6 +677,7 @@ const ManageSubscriber: FC = () => {
 
 
     const handleUpdateSubscriber = useCallback(() => {
+
         const updatedFormData = {
             ...formData,
             planAttributeOverrides: localAttributes,
@@ -1141,11 +1144,11 @@ const ManageSubscriber: FC = () => {
 
     return (
         <React.Fragment>
-            <Toast ref={toast}/>
-            <ConfirmDialog/>
             <div className="card justify-content-center w-full h-full">
+                <Toast ref={toast}  appendTo={"self"} />
+                <ConfirmDialog/>
                 <AppHeader title={"Manage Subscriber"}/>
-                <Messages ref={msgs}/>
+
                 <div style={{
                     marginTop: 150,
                     top: 0,
@@ -1157,6 +1160,7 @@ const ManageSubscriber: FC = () => {
                     right: 0
                 }} className={'absolute'}>
                     <div style={{width: "80%"}}>
+                        <Messages ref={msgs}/>
                         <Stepper ref={stepperRef}>
                             <StepperPanel header="Basic Details">
                                 {createSubscriberLoader || updateSubscriberParametersLoader || updateSubscriberLoader || loadingSubscriber && (
@@ -1249,11 +1253,6 @@ const ManageSubscriber: FC = () => {
                                         </div>
                                     </div>
                                 </div>
-
-                                <div className="flex pt-4 justify-content-end">
-                                    <Button label="Next" icon="pi pi-arrow-right" severity="secondary" iconPos="right"
-                                            onClick={handlingSubscriberSave}/>
-                                </div>
                             </StepperPanel>
                             <StepperPanel header="Parameter Details">
                                 <TabView onTabChange={handleTabChange} activeIndex={activeIndex}>
@@ -1292,8 +1291,10 @@ const ManageSubscriber: FC = () => {
                                             }}>
                                                 <div style={{flex: 1}}>
                                                     <h4>Parameter Overrides</h4>
-                                                    <DataTable value={localParameters ?? []}>
-                                                        <Column field="parameterName" header="Parameter Name"></Column>
+                                                    <DataTable value={localParameters ?? []} scrollable
+                                                               scrollHeight="300px">
+                                                        <Column field="parameterName"
+                                                                header="Parameter Name"></Column>
                                                         <Column field="parameterValue"
                                                                 header="Parameter Value"></Column>
                                                         <Column field="parameterOverrideValue"
@@ -1304,8 +1305,10 @@ const ManageSubscriber: FC = () => {
 
                                                 <div style={{flex: 1}}>
                                                     <h4>Attribute Overrides</h4>
-                                                    <DataTable value={localAttributes ?? []}>
-                                                        <Column field="attributeName" header="Attribute Name"></Column>
+                                                    <DataTable value={localAttributes ?? []} scrollable
+                                                               scrollHeight="300px">
+                                                        <Column field="attributeName"
+                                                                header="Attribute Name"></Column>
                                                         <Column field="attributeValue"
                                                                 header="Attribute Value"></Column>
                                                         <Column field="attributeOverrideValue"
@@ -1331,7 +1334,8 @@ const ManageSubscriber: FC = () => {
                                                         <Button onClick={handleAddSubscriberAttribute}>Add
                                                             Attribute</Button>
                                                     </div>
-                                                    <DataTable value={localSubscriberAttribute ?? []}>
+                                                    <DataTable value={localSubscriberAttribute ?? []} scrollable
+                                                               scrollHeight="300px">
                                                         <Column field="attributeName" body={SubscriberAttributeName}
                                                                 header="Attribute Name"></Column>
                                                         <Column field="attributeValue" header="Attribute Value"
@@ -1348,7 +1352,8 @@ const ManageSubscriber: FC = () => {
                                                         <Button onClick={handleAddSubscriberParameter}>Add
                                                             Parameter</Button>
                                                     </div>
-                                                    <DataTable value={localSubscriberParameter ?? []}>
+                                                    <DataTable value={localSubscriberParameter ?? []} scrollable
+                                                               scrollHeight="300px">
                                                         <Column field="parameterName" body={SubscriberParameterName}
                                                                 header="Parameter Name"></Column>
                                                         <Column field="parameterValue" header="Parameter Value"
@@ -1449,19 +1454,65 @@ const ManageSubscriber: FC = () => {
                                 </TabView>
                             </StepperPanel>
                         </Stepper>
-                        <div className="flex pt-4 justify-content-between" style={{
-                            bottom: 30,
+                        <div className="flex pt-4" style={{
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
                             position: 'fixed',
-                            width: '80%',
+                            width: '100%',
+                            height: 80,
                             backdropFilter: 'blur(10px)',
-                            background: 'rgba(255, 255, 255, 0.1)'
+                            background: 'linear-gradient(139deg, rgba(255,255,255,1) 12%, rgba(175,223,255,0.1) 90%)',
+                            zIndex: 9999,
+                            display: 'flex',
+                            alignItems: 'center',
+                            borderTop: 'solid 1px #8dd1ff',
+                            justifyContent: 'space-between'
                         }}>
-                            <Button label="Back" severity="secondary" icon="pi pi-arrow-left"
-                                    onClick={() => stepperRef.current.prevCallback()}/>
-                            {/*<Button label="Next" icon="pi pi-arrow-right" iconPos="right" onClick={() => stepperRef.current.nextCallback()} />*/}
 
-                            <Button label="Save" severity="secondary" icon="pi pi-save"
-                                    onClick={handleUpdateSubscriber}/>
+                            <div style={{
+                                width: '100%',
+                                gap: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                paddingLeft: '80px',
+                                justifyContent: 'start',
+                                paddingBottom: '20px',
+                            }}>
+                                <p style={{fontSize:12, color: "gray", fontFamily:'ubuntu'}}>3A Web console | Copyright 2024</p>
+                            </div>
+                            <div style={{
+                                alignItems: 'center',
+                                width: '100%',
+                                gap: '10px',
+                                display: 'flex',
+                                paddingRight: '80px',
+                                paddingBottom: '20px',
+                                justifyContent: 'end'
+
+                            }}>
+                                <Button label="Back" severity="secondary" icon="pi pi-arrow-left"
+                                        onClick={() => {
+                                            setActiveStep(true);
+                                            if (stepperRef.current?.getActiveStep() === 0) {
+                                                navigate("/view-subscribers", {replace: true});
+                                            } else {
+                                                stepperRef.current.prevCallback()
+                                            }
+                                        }}/>
+                                {activeStep &&
+                                    <Button label="Next" icon="pi pi-arrow-right" severity="secondary" iconPos="right"
+                                            onClick={handlingSubscriberSave}/>}
+
+                                <Button label="Save" severity="secondary" icon="pi pi-save"
+                                        onClick={() => {
+                                            if (stepperRef.current?.getActiveStep() === 0) {
+                                                handlingSubscriberSave();
+                                            } else {
+                                                    handleUpdateSubscriber();
+                                            }
+                                        }}/>
+                            </div>
                         </div>
                     </div>
 
