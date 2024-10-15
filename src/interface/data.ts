@@ -1,14 +1,14 @@
 
 
 export interface IPlan {
-    planId?: string;
+    planId: number;
     planType?: string;
-    planName?: string;
+    planName: string;
     description?: string;
 }
 
 export interface IPlanAttribute {
-    overrideId?: number;
+    overrideId: number;
     attributeName?: string;
     attributeOverrideValue?: string;
     attributeValue?: string;
@@ -17,7 +17,7 @@ export interface IPlanAttribute {
 }
 
 export interface IPlanParameter {
-    overrideId?: number;
+    overrideId: number;
     parameterName?: string;
     parameterOverrideValue?: string;
     parameterValue?: string;
@@ -26,13 +26,13 @@ export interface IPlanParameter {
 }
 
 export interface INasWhitelist {
-    id?: number;
+    id: number;
     subscriberId?: number;
     nasIdPattern?: string;
 }
 
 export interface IDeviceWhitelist {
-    id?: number;
+    id: number;
     subscriberId?: number;
     MACAddress?: string;
     description?: string;
@@ -47,7 +47,7 @@ export interface IAttributeGroup {
 }
 
 export interface ISubscriberAVP {
-    id?: number;
+    id: number;
     attribute?: string;
     subscriberId?: number;
     attributeGroupId?: number;
@@ -72,7 +72,7 @@ export enum TypeEnum {
 }
 
 export interface IProfileSubscribeOverrideAVP {
-    overrideId?: number
+    overrideId: number;
     subscriberId?: number
     planId?: number
     overrideKey?: string
@@ -81,7 +81,7 @@ export interface IProfileSubscribeOverrideAVP {
 }
 
 export interface ISubscriber {
-    subscriberId?: number
+    subscriberId?: number | null | undefined;
     username?: string;
     password?: string;
     status?: StatusEnum | null;
@@ -97,10 +97,12 @@ export interface ISubscriber {
     deviceWhitelist?: IDeviceWhitelist[];
     subscriberAVPs?: ISubscriberAVP[];
     pofileOverrideSubscriberAVPs?: IProfileSubscribeOverrideAVP[];
+    subscriberAttributes?: ISubscriberAttribute[];
+    subscriberParameters?: ISubscriberParameter[];
 }
 
 export interface IPlanInfo {
-    planId: number | null | undefined;
+    planId: number;
     planAttributes: IPlanAttribute[] | undefined;
     planParameter: IPlanParameter[] | undefined;
 }
@@ -110,3 +112,34 @@ export interface IState {
     description?: string
     isAuthorized?: number
 }
+
+export interface ISubscriberAttribute {
+    id: number;
+    subscriberId?: number;
+    attributeName?: String
+    attributeValue?: String
+}
+
+export interface ISubscriberParameter {
+    id: number;
+    subscriberId?: number;
+    parameterName?: String
+    parameterValue?: String
+    rejectOnFailure?: number
+}
+
+
+export interface IAttributeMeta {
+    id?: number
+    attribute?: String
+}
+
+export interface IParameterMeta {
+    id?: number
+    parameter?: String
+}
+export interface IProfile {
+    id?: number
+    profile?: String
+}
+

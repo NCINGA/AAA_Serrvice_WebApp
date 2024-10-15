@@ -109,6 +109,37 @@ export const GET_PLANS = gql`
 
 `;
 
+export const GET_ATTRIBUTE_META = gql`
+    query GetAttributeMeta {
+        getAttributeMeta {
+            id
+            attribute
+        }
+    }
+
+`;
+
+export const GET_PARAMETER_META = gql`
+    query GetParameterMeta {
+        getParameterMeta {
+            id
+            parameter
+        }
+    }
+
+`;
+
+export const GET_PROFILE_META = gql`
+    query GetProfileMeta {
+        getProfileMeta {
+            id
+            profile
+        }
+    }
+
+
+`;
+
 export const GET_PLAN_ATTRIBUTES = gql`
     query GetPlanAttribute($subscriberId: Int!, $planId: Int!) {
         getPlanAttribute(subscriberId: $subscriberId, planId: $planId) {
@@ -132,6 +163,48 @@ export const GET_NAS_WHITELIST = gql`
     }
 
 `;
+
+export const GET_SUBSCRIBER_ATTRIBUTE = gql`
+    query GetSubscriberAttribute($subscriberId : Int!) {
+        getSubscriberAttribute(subscriberId: $subscriberId) {
+            id
+            subscriberId
+            attributeName
+            attributeValue
+        }
+    }
+
+`;
+
+export const GET_SUBSCRIBER_PARAMETER = gql`
+    query GetSubscriberParameter($subscriberId : Int!) {
+        getSubscriberParameter(subscriberId: $subscriberId) {
+            id
+            subscriberId
+            parameterName
+            parameterValue
+            rejectOnFailure
+        }
+    }
+
+`;
+
+export const GET_SUBSCRIBER_AVPS = gql`
+    query GetSubscriberAVPs($subscriberId : Int!) {
+        getSubscriberAVPs(subscriberId: $subscriberId) {
+            id
+            subscriberId
+            attributeGroupId
+            attribute
+            operation
+            value
+            status
+        }
+    }
+
+
+`;
+
 
 export const GET_DEVICE_WHITELIST = gql`
     query GetDeviceWhitelist($subscriberId : Int!) {

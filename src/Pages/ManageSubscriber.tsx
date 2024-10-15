@@ -10,15 +10,21 @@ import {StepperPanel} from 'primereact/stepperpanel';
 import {
     APPLY_PLAN,
     CREATE_NEW_SUBSCRIBER,
+    GET_ATTRIBUTE_META,
     GET_DEVICE_WHITELIST,
     GET_NAS_ATTRIBUTE_GROUP,
     GET_NAS_WHITELIST,
+    GET_PARAMETER_META,
     GET_PLAN_ATTRIBUTES,
     GET_PLAN_PARAMETERS,
     GET_PLANS,
+    GET_PROFILE_META,
     GET_PROFILE_OVERRIDE_AVPs,
     GET_STATE,
+    GET_SUBSCRIBER_ATTRIBUTE,
+    GET_SUBSCRIBER_AVPS,
     GET_SUBSCRIBER_BY_ID,
+    GET_SUBSCRIBER_PARAMETER,
     UPDATE_SUBSCRIBER,
     UPDATE_SUBSCRIBER_PARAMETERS
 } from "../graphql/queries";
@@ -28,15 +34,20 @@ import {IconField} from "primereact/iconfield";
 import {ProgressSpinner} from "primereact/progressspinner";
 import {
     IAttributeGroup,
+    IAttributeMeta,
     IDeviceWhitelist,
     INasWhitelist,
+    IParameterMeta,
     IPlan,
     IPlanAttribute,
     IPlanParameter,
+    IProfile,
     IProfileSubscribeOverrideAVP,
     IState,
     ISubscriber,
+    ISubscriberAttribute,
     ISubscriberAVP,
+    ISubscriberParameter,
     OperationEnum,
     StatusEnum,
     TypeEnum
@@ -46,10 +57,13 @@ import {Card} from "primereact/card";
 import {Column} from "primereact/column";
 import {InputSwitch} from "primereact/inputswitch";
 import {Messages} from "primereact/messages";
+import {ConfirmDialog, confirmDialog} from 'primereact/confirmdialog';
+import {Toast} from 'primereact/toast';
 
 const ManageSubscriber: FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const toast = useRef<any>(null);
     const stepperRef: any = useRef(null);
     const [showPassword, setShowPassword] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
@@ -61,7 +75,8 @@ const ManageSubscriber: FC = () => {
     const [planId, setPlanId] = useState<number>(0);
     const [localDeviceWhitelist, setLocalDeviceWhitelist] = useState<IDeviceWhitelist[]>([]);
     const [localSubscriberAVP, setLocalSubscriberAVP] = useState<ISubscriberAVP[]>([]);
-    const [planData, setPlanData] = useState<IPlan>(null);
+    const [localSubscriberAttribute, setLocalSubscriberAttribute] = useState<ISubscriberAttribute[]>([]);
+    const [localSubscriberParameter, setLocalSubscriberParameter] = useState<ISubscriberParameter[]>([]);
     const [formData, setFormData] = useState<ISubscriber>({
         username: "",
         password: "",
@@ -77,7 +92,9 @@ const ManageSubscriber: FC = () => {
         nasWhitelist: [],
         deviceWhitelist: [],
         subscriberAVPs: [],
-        pofileOverrideSubscriberAVPs: []
+        pofileOverrideSubscriberAVPs: [],
+        subscriberAttributes: [],
+        subscriberParameters: []
     });
     const msgs: any = useRef(null);
 
@@ -93,6 +110,22 @@ const ManageSubscriber: FC = () => {
         notifyOnNetworkStatusChange: true,
         fetchPolicy: 'network-only'
     });
+
+    const [getProfileMeta, {loading: loadingProfileMeta, data: profileMeta}] = useLazyQuery(GET_PROFILE_META, {
+        notifyOnNetworkStatusChange: true,
+        fetchPolicy: 'network-only'
+    });
+
+    const [getAttributeMeta, {loading: loadingAttributeMeta, data: attributeMeta}] = useLazyQuery(GET_ATTRIBUTE_META, {
+        notifyOnNetworkStatusChange: true,
+        fetchPolicy: 'network-only'
+    });
+
+    const [getParameterMeta, {loading: loadingParameterMeta, data: parameterMeta}] = useLazyQuery(GET_PARAMETER_META, {
+        notifyOnNetworkStatusChange: true,
+        fetchPolicy: 'network-only'
+    });
+
 
     const [getSubscriberById, {loading: loadingSubscriber, data: subscriber}] = useLazyQuery(GET_SUBSCRIBER_BY_ID, {
         notifyOnNetworkStatusChange: true,
@@ -115,11 +148,16 @@ const ManageSubscriber: FC = () => {
             }
         },
         onError: (error) => {
-            console.log(error)
         }
     });
 
     const [getNasWhiteList, {data: nasWhitelist}] = useLazyQuery(GET_NAS_WHITELIST, {
+        notifyOnNetworkStatusChange: true,
+        variables: {subscriberId: subscriberId},
+        fetchPolicy: 'network-only'
+    });
+
+    const [getSubscriberAVPs, {data: subscriberAVPs}] = useLazyQuery(GET_SUBSCRIBER_AVPS, {
         notifyOnNetworkStatusChange: true,
         variables: {subscriberId: subscriberId},
         fetchPolicy: 'network-only'
@@ -131,17 +169,30 @@ const ManageSubscriber: FC = () => {
         fetchPolicy: 'network-only'
     });
 
-    const [getPlanAttribute, {data: attributes, refetch: refetchPlanAttribute}] = useLazyQuery(GET_PLAN_ATTRIBUTES, {
+    const [getPlanAttribute, {data: attributes}] = useLazyQuery(GET_PLAN_ATTRIBUTES, {
         variables: {subscriberId: subscriberId, planId: formData.planId},
         notifyOnNetworkStatusChange: true,
         fetchPolicy: 'network-only'
     });
 
-    const [getPlanParameter, {data: parameters, refetch: refetchPlanParameter}] = useLazyQuery(GET_PLAN_PARAMETERS, {
+    const [getPlanParameter, {data: parameters}] = useLazyQuery(GET_PLAN_PARAMETERS, {
         variables: {subscriberId: subscriberId, planId: formData.planId},
         notifyOnNetworkStatusChange: true,
         fetchPolicy: 'network-only'
     });
+
+    const [getSubscriberAttribute, {data: subscriberAttribute}] = useLazyQuery(GET_SUBSCRIBER_ATTRIBUTE, {
+        variables: {subscriberId: subscriberId},
+        notifyOnNetworkStatusChange: true,
+        fetchPolicy: 'network-only'
+    });
+
+    const [getSubscriberParameter, {data: subscriberParameter}] = useLazyQuery(GET_SUBSCRIBER_PARAMETER, {
+        variables: {subscriberId: subscriberId},
+        notifyOnNetworkStatusChange: true,
+        fetchPolicy: 'network-only'
+    });
+
 
     const [getNASAttribute, {
         loading: loadingNASAttributeGroup,
@@ -151,12 +202,11 @@ const ManageSubscriber: FC = () => {
         fetchPolicy: 'network-only'
     });
 
-    const [getProfileOverrideAVPs, {data: profileOverrideSubscriberAVPs}] = useLazyQuery(GET_PROFILE_OVERRIDE_AVPs, {
+    const [getProfileOverrideAVPs, {data: profileOverrideSubscriberAVPs, refetch:refetchProfileAVPs}] = useLazyQuery(GET_PROFILE_OVERRIDE_AVPs, {
         notifyOnNetworkStatusChange: true,
-        variables: {subscriberId: subscriberId, planId: formData.planId},
         fetchPolicy: 'network-only'
     });
-    const [applyPlan, {data: applyPlanSuccess}] = useMutation(APPLY_PLAN, {
+    const [applyPlan] = useMutation(APPLY_PLAN, {
             notifyOnNetworkStatusChange: true,
         }
     );
@@ -185,7 +235,8 @@ const ManageSubscriber: FC = () => {
 
 
     const [updateSubscriberParameters, {
-        loading: updateSubscriberParametersLoader
+        loading: updateSubscriberParametersLoader,
+        data: updateSubscriberParametersSuccess
     }] = useMutation(
         UPDATE_SUBSCRIBER_PARAMETERS,
         {
@@ -198,14 +249,23 @@ const ManageSubscriber: FC = () => {
         getPlan();
         getState();
         getNASAttribute();
-        getProfileOverrideAVPs()
-    }, [getPlan, getState, getProfileOverrideAVPs]);
+        getProfileMeta()
+        getAttributeMeta();
+        getParameterMeta();
+    }, [getPlan, getState, getProfileMeta]);
+
 
     useEffect(() => {
         if (subId) {
             const id = Number.parseInt(subId);
             setSubscriberId(id);
             getSubscriberById({variables: {subscriberId: id}}).then((response) => {
+                getProfileOverrideAVPs({
+                    variables: {
+                        subscriberId: id,
+                        planId: response.data.getSubscriberById?.planId
+                    }
+                });
                 getPlanParameter({
                     variables: {
                         subscriberId: id,
@@ -218,11 +278,23 @@ const ManageSubscriber: FC = () => {
                         planId: response.data.getSubscriberById?.planId
                     }
                 });
+                getSubscriberAttribute({
+                    variables: {
+                        subscriberId: id
+                    }
+                });
+                getSubscriberParameter({
+                    variables: {
+                        subscriberId: id
+                    }
+                });
             });
             getNasWhiteList({variables: {subscriberId: id}});
             getDeviceWhitelist({variables: {subscriberId: id}});
+            getSubscriberAVPs({variables: {subscriberId: id}});
+
         }
-    }, [subId, getSubscriberById, getNasWhiteList, getDeviceWhitelist]);
+    }, [subId, getSubscriberById, getNasWhiteList, getDeviceWhitelist, getSubscriberAttribute, getAttributeMeta, getParameterMeta, getSubscriberParameter, getSubscriberAVPs]);
 
 
     useEffect(() => {
@@ -277,6 +349,23 @@ const ManageSubscriber: FC = () => {
         value: value
     }));
 
+    const attributeMetaOption = attributeMeta?.getAttributeMeta?.map((attribute: IAttributeMeta) => ({
+        label: attribute.attribute,
+        value: attribute.attribute
+    }));
+
+    const parameterMetaOption = parameterMeta?.getParameterMeta?.map((parameter: IParameterMeta) => ({
+        label: parameter.parameter,
+        value: parameter.parameter
+    }));
+
+    const profileMetaOption = profileMeta?.getProfileMeta?.map((profile: IProfile) => ({
+        label: profile.profile,
+        value: profile.profile
+    }));
+
+    const rejectOnFailureOptions = [{label: "True", value: 1}, {label: "False", value: 2}]
+
     useEffect(() => {
         if (attributes?.getPlanAttribute) {
             setLocalAttributes(attributes.getPlanAttribute);
@@ -295,6 +384,12 @@ const ManageSubscriber: FC = () => {
         }
     }, [nasWhitelist]);
 
+    useEffect(() => {
+        if (subscriberAVPs?.getSubscriberAVPs) {
+            setLocalSubscriberAVP(subscriberAVPs.getSubscriberAVPs);
+        }
+    }, [subscriberAVPs]);
+
 
     useEffect(() => {
         if (deviceWhitelist?.getDeviceWhitelist) {
@@ -302,12 +397,30 @@ const ManageSubscriber: FC = () => {
         }
     }, [deviceWhitelist])
 
+    useEffect(() => {
+        if (subscriberAttribute?.getSubscriberAttribute) {
+            setLocalSubscriberAttribute(subscriberAttribute?.getSubscriberAttribute);
+        }
+    }, [subscriberAttribute])
+
+    useEffect(() => {
+        if (subscriberParameter?.getSubscriberParameter) {
+            setLocalSubscriberParameter(subscriberParameter?.getSubscriberParameter);
+        }
+    }, [subscriberParameter])
+
 
     useEffect(() => {
         if (profileOverrideSubscriberAVPs?.getProfileOverrideSubscriberAVPs) {
             setLocalProfileSubscriberOverrideAvps(profileOverrideSubscriberAVPs?.getProfileOverrideSubscriberAVPs);
         }
     }, [profileOverrideSubscriberAVPs])
+
+    useEffect(() => {
+        if (subscriberAttribute?.getSubscriberAttribute) {
+            setLocalSubscriberAttribute(subscriberAttribute?.getSubscriberAttribute);
+        }
+    }, [subscriberAttribute])
 
 
     const onUpdateNasPattern = (value: any, editNasPattern: INasWhitelist) => {
@@ -409,20 +522,53 @@ const ManageSubscriber: FC = () => {
         );
     };
 
-
-    const handleChangePlan = (e: any) => {
+    const applySelectedPlan = (e: any) => {
         handleInputChange(e, 'planId');
         const selectedPlan: IPlan = plans?.getPlans.find((plan: IPlan) => plan.planId === e.value);
-        setPlanId(selectedPlan.planId as Number);
-        setPlanData(selectedPlan);
-        applyPlan({
-            variables: {subscriberId: subscriberId, planId: selectedPlan.planId, state: "ACTIVE"}
-        }).then((response) => {
-            getPlanParameter({subscriberId: subscriberId, planId: selectedPlan.planId});
-            getPlanAttribute({subscriberId: subscriberId, planId: selectedPlan.planId});
-        }).catch((error) => console.error(error));
+        if (selectedPlan) {
+            setPlanId(selectedPlan.planId);
+            applyPlan({
+                variables: {subscriberId: subscriberId, planId: selectedPlan.planId, state: "ACTIVE"}
+            }).then(() => {
+                getPlanParameter({variables: {subscriberId: subscriberId, planId: selectedPlan.planId}});
+                getPlanAttribute({variables: {subscriberId: subscriberId, planId: selectedPlan.planId}});
+                refetchProfileAVPs();
+            }).catch((error) => console.error(error));
+        }
+    };
 
-    }
+    const accept = (e: any) => {
+        toast.current.show({
+            severity: 'info',
+            summary: 'Apply',
+            detail: `${plans?.getPlans?.filter((plan: IPlan) => plan.planId === formData.planId)?.[0]?.planName}`,
+            life: 3000
+        });
+        applySelectedPlan(e);
+    };
+
+    const reject = () => {
+    };
+
+    const allowToPlanChange = (e: any) => {
+        confirmDialog({
+            message: 'Are you sure you want to proceed? \n When proceed, all plan related parameter will be reset',
+            header: 'Confirmation',
+            icon: 'pi pi-exclamation-triangle',
+            defaultFocus: 'accept',
+            accept: () => accept(e),
+            reject
+        });
+    };
+
+    const handleChangePlan = (e: any) => {
+        if (formData.planId !== undefined) {
+            allowToPlanChange(e);
+        } else {
+            applySelectedPlan(e);
+        }
+    };
+
 
     const handlingSubscriberSave = useCallback(() => {
         msgs.current.clear();
@@ -467,15 +613,12 @@ const ManageSubscriber: FC = () => {
     useEffect(() => {
         if (createSubscriberSuccess !== undefined) {
             if (createSubscriberSuccess?.createSubscriber?.responseCode === 3) {
-                msgs.current.show([
-                    {
-                        severity: 'success',
-                        summary: 'Success',
-                        detail: 'Subscriber created successfully',
-                        sticky: true,
-                        closable: false
-                    }
-                ]);
+                toast.current.show({
+                    severity: 'info',
+                    summary: 'Success',
+                    detail: `Subscriber has been created!!!`,
+                    life: 3000
+                });
                 setSubscriberId(createSubscriberSuccess?.createSubscriber?.subscriberId)
                 setTimeout(() => {
                     stepperRef.current.nextCallback()
@@ -484,21 +627,42 @@ const ManageSubscriber: FC = () => {
         }
     }, [createSubscriberSuccess])
 
+
+    useEffect(() => {
+        if (updateSubscriberParametersSuccess !== undefined) {
+            if (updateSubscriberParametersSuccess?.updateSubscriberParameters?.responseCode === 11) {
+                toast.current.show({
+                    severity: 'info',
+                    summary: 'Success',
+                    detail: `Subscriber has been updated!!!`,
+                    life: 3000
+                });
+                setTimeout(() => {
+                    navigate("/view-subscribers", {replace: true})
+                }, 2000)
+            }
+        }
+    }, [updateSubscriberParametersSuccess])
+
+
+    useEffect(() => {
+        if (updateSubscriberError !== undefined) {
+
+            toast.current.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: `Failed operation !!!`,
+                life: 3000
+            });
+
+        }
+    }, [updateSubscriberError])
+
+
     useEffect(() => {
         if (updateSubscriberSuccess !== undefined) {
             if (updateSubscriberSuccess?.updateSubscriber?.responseCode === 4) {
-                msgs.current.show([
-                    {
-                        severity: 'success',
-                        summary: 'Success',
-                        detail: 'Subscriber updated successfully',
-                        sticky: true,
-                        closable: false
-                    }
-                ]);
-                setTimeout(() => {
-                    stepperRef.current.nextCallback()
-                }, 2000)
+                stepperRef.current.nextCallback();
             }
         }
     }, [updateSubscriberSuccess])
@@ -518,6 +682,8 @@ const ManageSubscriber: FC = () => {
             nasWhitelist: localNasWhitelist,
             pofileOverrideSubscriberAVPs: localProfileSubscriberOverrideAvps,
             deviceWhitelist: localDeviceWhitelist,
+            subscriberAttributes: localSubscriberAttribute,
+            subscriberParameters: localSubscriberParameter
         };
 
         updateSubscriberParameters({
@@ -570,6 +736,24 @@ const ManageSubscriber: FC = () => {
         setLocalDeviceWhitelist((device) => [...device, {id: generateID(), status: "ACTIVE"}])
     }
 
+    const handleAddSubscriberAttribute = () => {
+        setLocalSubscriberAttribute((attribute) => [...attribute, {
+            id: generateID(),
+            attributeName: "",
+            attributeValue: ""
+        }])
+        console.log(localSubscriberAttribute)
+    }
+
+    const handleAddSubscriberParameter = () => {
+        setLocalSubscriberParameter((parameter) => [...parameter, {
+            id: generateID(),
+            parameterName: "",
+            parameterValue: "",
+            rejectOnFailure: 0
+        }])
+    }
+
     const DeviceStatus = (data: any) => (
         <InputSwitch checked={data?.status === "ACTIVE" ? true : false}
                      onChange={(e) => onUpdateDevice(e.value === true ? "ACTIVE" : "INACTIVE", data, "status")}/>
@@ -587,6 +771,38 @@ const ManageSubscriber: FC = () => {
                 deviceWhitelist: updateDevice,
             }));
             return updateDevice;
+        });
+
+    };
+
+    const onUpdateSubscriberAttribute = (value: any, editAttribute: ISubscriberAttribute, field: any) => {
+        setLocalSubscriberAttribute((pervAttr) => {
+            const updateAttribute = pervAttr.map((attribute) =>
+                attribute.id === editAttribute.id
+                    ? {...attribute, [field]: value}
+                    : attribute
+            );
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                subscriberAttributes: updateAttribute,
+            }));
+            return updateAttribute;
+        });
+
+    };
+
+    const onUpdateSubscriberParameter = (value: any, editParameter: ISubscriberParameter, field: any) => {
+        setLocalSubscriberParameter((pervPara) => {
+            const updateParameter = pervPara.map((parameter) =>
+                parameter.id === editParameter.id
+                    ? {...parameter, [field]: value}
+                    : parameter
+            );
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                subscriberParameters: updateParameter,
+            }));
+            return updateParameter;
         });
 
     };
@@ -742,11 +958,114 @@ const ManageSubscriber: FC = () => {
         );
     };
 
+    const SubscriberAttributeValue = (attribute: ISubscriberAttribute) => (
+        <InputText
+            onChange={(e) => onUpdateSubscriberAttribute(e.target.value, attribute, "attributeValue")}
+            value={attribute.attributeValue}
+            placeholder={"Value"}
+            size="small"
+        />
+    );
+
+
+    const SubscriberParameterValue = (parameter: ISubscriberParameter) => (
+        <InputText
+            onChange={(e) => onUpdateSubscriberParameter(e.target.value, parameter, "parameterValue")}
+            value={parameter.parameterValue}
+            placeholder={"Value"}
+            size="small"
+        />
+    );
+
+    const SubscriberAttributeName = (attribute: ISubscriberAttribute) => (
+        <Dropdown
+            id="attributeName"
+            loading={loadingAttributeMeta}
+            value={attribute.attributeName}
+            options={attributeMetaOption}
+            onChange={(e) => {
+                onUpdateSubscriberAttribute(e.value, attribute, "attributeName");
+            }}
+            placeholder="Select Attribute"
+        />
+    );
+
+    const SubscriberParameterRejectOnFailure = (parameter: ISubscriberParameter) => (
+        <Dropdown
+            id="rejectOnFailure"
+            value={parameter.rejectOnFailure}
+            options={rejectOnFailureOptions}
+            onChange={(e) => {
+                onUpdateSubscriberParameter(e.value, parameter, "rejectOnFailure");
+            }}
+            placeholder="Select Action"
+        />
+    );
+
+    const SubscriberParameterName = (parameter: ISubscriberParameter) => (
+        <Dropdown
+            id="parameterName"
+            loading={loadingParameterMeta}
+            value={parameter.parameterName}
+            options={parameterMetaOption}
+            onChange={(e) => {
+                onUpdateSubscriberParameter(e.value, parameter, "parameterName");
+            }}
+            placeholder="Select Parameter"
+        />
+    );
+
+
+    const SubscriberAttributeButtons = (rowData: ISubscriberAttribute) => {
+        return (
+            <div className="flex items-center gap-2">
+                <Button
+                    icon="pi pi-trash"
+                    aria-label="Delete"
+                    onClick={() => {
+                        setLocalSubscriberAttribute((prevAttribute) => {
+                            const updatedAttributeList = prevAttribute.filter((att) => att.id !== rowData.id);
+                            setFormData((prevFormData) => ({
+                                ...prevFormData,
+                                subscriberAttributes: updatedAttributeList,
+                            }));
+                            return updatedAttributeList;
+                        });
+                    }}
+                    className="p-button-rounded p-button-danger"
+                />
+            </div>
+        );
+    };
+
+    const SubscriberParameterButtons = (rowData: ISubscriberParameter) => {
+        return (
+            <div className="flex items-center gap-2">
+                <Button
+                    icon="pi pi-trash"
+                    aria-label="Delete"
+                    onClick={() => {
+                        setLocalSubscriberParameter((prevParameter) => {
+                            const updatedParameterList = prevParameter.filter((parameter) => parameter.id !== rowData.id);
+                            setFormData((prevFormData) => ({
+                                ...prevFormData,
+                                subscriberParameters: updatedParameterList,
+                            }));
+                            return updatedParameterList;
+                        });
+                    }}
+                    className="p-button-rounded p-button-danger"
+                />
+            </div>
+        );
+    };
+
+
     const addProfileOverride = () => {
         setLocalProfileSubscriberOverrideAvps((override) => [...override, {
             overrideId: generateID(),
             subscriberId: subscriberId,
-            planId: Number.parseInt(planId as string),
+            planId: planId,
             overrideKey: "",
             overrideValue: "",
             overrideWhen: ""
@@ -771,11 +1090,15 @@ const ManageSubscriber: FC = () => {
 
 
     const OverrideKey = (data: IProfileSubscribeOverrideAVP) => (
-        <InputText
-            onChange={(e) => onUpdateProfileOverride(e.target.value, data, "overrideKey")}
+        <Dropdown
+            loading={loadingProfileMeta}
+            id="overrideKey"
             value={data.overrideKey}
-            placeholder={"Override Key"}
-            size="small"
+            options={profileMetaOption ?? []}
+            onChange={(e) => {
+                onUpdateProfileOverride(e.value, data, "overrideKey");
+            }}
+            placeholder="Select Override Key"
         />
     );
 
@@ -817,101 +1140,103 @@ const ManageSubscriber: FC = () => {
 
     return (
         <React.Fragment>
+            <Toast ref={toast}/>
+            <ConfirmDialog/>
             <div className="card justify-content-center w-full h-full mt-2">
                 <h1>Subscriber Create</h1>
                 <Messages ref={msgs}/>
-                <div style={{ flexBasis: '100%' }}>
-                <Stepper ref={stepperRef}>
-                    <StepperPanel header="Basic Details">
-                        {createSubscriberLoader || updateSubscriberParametersLoader || updateSubscriberLoader && (
-                            <div
-                                style={{
-                                    backgroundColor: "rgba(255, 255, 255, 0.4)",
-                                    backdropFilter: "blur(5px)",
-                                    position: "absolute",
-                                    top: "0px",
-                                    bottom: "0px",
-                                    left: "0px",
-                                    right: "0px",
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    zIndex: 9999,
-                                }}
-                            >
-                                <ProgressSpinner style={{width: "50px", height: "50px"}} strokeWidth="2"
-                                                 animationDuration=".5s"/>
-                            </div>
-                        )}
-
-
-                        <div>
-                            <div
-                                className="p-fluid"
-                                style={{
-                                    display: "grid",
-                                    gridTemplateColumns: "1fr 1fr",
-                                    columnGap: "2rem",
-                                    rowGap: "1.5rem",
-                                }}
-                            >
-                                <div className="p-field">
-                                    <label htmlFor="username">Username</label>
-                                    <InputText id="username" value={formData.username}
-                                               onChange={(e) => handleInputChange(e, "username")}/>
+                <div style={{flexBasis: '100%'}}>
+                    <Stepper ref={stepperRef}>
+                        <StepperPanel header="Basic Details">
+                            {createSubscriberLoader || updateSubscriberParametersLoader || updateSubscriberLoader || loadingSubscriber && (
+                                <div
+                                    style={{
+                                        backgroundColor: "rgba(255, 255, 255, 0.4)",
+                                        backdropFilter: "blur(5px)",
+                                        position: "absolute",
+                                        top: "0px",
+                                        bottom: "0px",
+                                        left: "0px",
+                                        right: "0px",
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        zIndex: 9999,
+                                    }}
+                                >
+                                    <ProgressSpinner style={{width: "50px", height: "50px"}} strokeWidth="2"
+                                                     animationDuration=".5s"/>
                                 </div>
+                            )}
 
-                                <div className="p-field">
-                                    <label htmlFor="password">Password</label>
-                                    <IconField>
-                                        <InputIcon onClick={togglePasswordVisibility}
-                                                   className={`pi ${showPassword ? "pi-eye" : "pi-eye-slash"}`}></InputIcon>
-                                        <InputText
-                                            type={showPassword ? "text" : "password"}
-                                            id="password"
-                                            value={formData.password}
-                                            onChange={(e) => handleInputChange(e, "password")}
+
+                            <div>
+                                <div
+                                    className="p-fluid"
+                                    style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "1fr 1fr",
+                                        columnGap: "2rem",
+                                        rowGap: "1.5rem",
+                                    }}
+                                >
+                                    <div className="p-field">
+                                        <label htmlFor="username">Username</label>
+                                        <InputText id="username" value={formData.username}
+                                                   onChange={(e) => handleInputChange(e, "username")}/>
+                                    </div>
+
+                                    <div className="p-field">
+                                        <label htmlFor="password">Password</label>
+                                        <IconField>
+                                            <InputIcon onClick={togglePasswordVisibility}
+                                                       className={`pi ${showPassword ? "pi-eye" : "pi-eye-slash"}`}></InputIcon>
+                                            <InputText
+                                                type={showPassword ? "text" : "password"}
+                                                id="password"
+                                                value={formData.password}
+                                                onChange={(e) => handleInputChange(e, "password")}
+                                            />
+                                        </IconField>
+                                    </div>
+
+                                    <div className="p-field">
+                                        <label htmlFor="status">Status</label>
+                                        <Dropdown
+                                            id="status"
+                                            value={formData.status}
+                                            options={statusOptions}
+                                            onChange={(e) => handleInputChange(e, "status")}
+                                            placeholder="Select a Status"
                                         />
-                                    </IconField>
+                                    </div>
+                                    <div className="p-field">
+                                        <label htmlFor="contactNo">Contact No</label>
+                                        <InputText id="contactNo" value={formData.contactNo}
+                                                   onChange={(e) => handleInputChange(e, "contactNo")}/>
+                                    </div>
+                                    <div className="p-field">
+                                        <label htmlFor="email">Email</label>
+                                        <InputText id="email" type="email" value={formData.email}
+                                                   onChange={(e) => handleInputChange(e, "email")}/>
+                                    </div>
+                                    <div className="p-field">
+                                        <label htmlFor="extId">External ID</label>
+                                        <InputText id="extId" value={formData.extId}
+                                                   onChange={(e) => handleInputChange(e, "extId")}/>
+                                    </div>
+                                    <div className="p-field">
+                                        <label htmlFor="realm">Realm</label>
+                                        <InputText id="realm" value={formData.realm}
+                                                   onChange={(e) => handleInputChange(e, "realm")}/>
+                                    </div>
+                                    <div className="p-field">
+                                        <label htmlFor="type">Type</label>
+                                        <Dropdown id="type" value={formData.type} options={typeOptions}
+                                                  onChange={(e) => handleInputChange(e, "type")}
+                                                  placeholder="Select a Type"/>
+                                    </div>
                                 </div>
-
-                                <div className="p-field">
-                                    <label htmlFor="status">Status</label>
-                                    <Dropdown
-                                        id="status"
-                                        value={formData.status}
-                                        options={statusOptions}
-                                        onChange={(e) => handleInputChange(e, "status")}
-                                        placeholder="Select a Status"
-                                    />
-                                </div>
-                                <div className="p-field">
-                                    <label htmlFor="contactNo">Contact No</label>
-                                    <InputText id="contactNo" value={formData.contactNo}
-                                               onChange={(e) => handleInputChange(e, "contactNo")}/>
-                                </div>
-                                <div className="p-field">
-                                    <label htmlFor="email">Email</label>
-                                    <InputText id="email" type="email" value={formData.email}
-                                               onChange={(e) => handleInputChange(e, "email")}/>
-                                </div>
-                                <div className="p-field">
-                                    <label htmlFor="extId">External ID</label>
-                                    <InputText id="extId" value={formData.extId}
-                                               onChange={(e) => handleInputChange(e, "extId")}/>
-                                </div>
-                                <div className="p-field">
-                                    <label htmlFor="realm">Realm</label>
-                                    <InputText id="realm" value={formData.realm}
-                                               onChange={(e) => handleInputChange(e, "realm")}/>
-                                </div>
-                                <div className="p-field">
-                                    <label htmlFor="type">Type</label>
-                                    <Dropdown id="type" value={formData.type} options={typeOptions}
-                                              onChange={(e) => handleInputChange(e, "type")}
-                                              placeholder="Select a Type"/>
-                                </div>
-                            </div>
                         </div>
 
                         <div className="flex pt-4 justify-content-end">
@@ -930,7 +1255,7 @@ const ManageSubscriber: FC = () => {
                                              columnGap: '2rem',
                                              rowGap: '1.5rem'
                                          }}>
-                                        <div className="p-field">
+                                        <div className="p-field" style={{marginRight: '1rem'}}>
                                             <label htmlFor="type">Plan</label>
                                             <Dropdown
                                                 loading={loadingPlans}
@@ -941,11 +1266,10 @@ const ManageSubscriber: FC = () => {
                                                 placeholder="Select Plan"
                                             />
                                         </div>
-                                        <Button label="Small" icon="pi pi-check" size="small" />
                                     </div>
 
                                     <Card title="Description">
-                                        <p className="m-0">{planData?.description ?? ""}</p>
+                                        <p className="m-0">{plans?.getPlans?.filter((plan: IPlan) => plan.planId === formData.planId)?.[0]?.description}</p>
                                     </Card>
 
                                     <Divider/>
@@ -978,7 +1302,52 @@ const ManageSubscriber: FC = () => {
                                 </div>
                             </TabPanel>
                             <TabPanel header="Parameters & Attributes">
-                                <div className="card"></div>
+                                <div className="card">
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '2rem',
+                                        justifyContent: 'space-between',
+                                        flexWrap: 'wrap'
+                                    }}>
+                                        <div style={{flex: 1}}>
+                                            <h4>Subscriber Attributes</h4>
+                                            <div
+                                                className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
+                                                <Button onClick={handleAddSubscriberAttribute}>Add Attribute</Button>
+                                            </div>
+                                            <DataTable value={localSubscriberAttribute ?? []}>
+                                                <Column field="attributeName" body={SubscriberAttributeName}
+                                                        header="Attribute Name"></Column>
+                                                <Column field="attributeValue" header="Attribute Value"
+                                                        body={SubscriberAttributeValue}></Column>
+                                                <Column header="Actions"
+                                                        body={SubscriberAttributeButtons}></Column>
+                                            </DataTable>
+                                        </div>
+
+                                        <div style={{flex: 1}}>
+                                            <h4>Subscriber Parameters</h4>
+                                            <div
+                                                className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
+                                                <Button onClick={handleAddSubscriberParameter}>Add Parameter</Button>
+                                            </div>
+                                            <DataTable value={localSubscriberParameter ?? []}>
+                                                <Column field="parameterName" body={SubscriberParameterName}
+                                                        header="Parameter Name"></Column>
+                                                <Column field="parameterValue" header="Parameter Value"
+                                                        body={SubscriberParameterValue}></Column>
+
+                                                <Column field="rejectOnFailure" header="Reject On Failure"
+                                                        body={SubscriberParameterRejectOnFailure}></Column>
+
+                                                <Column header="Actions"
+                                                        body={SubscriberParameterButtons}></Column>
+                                            </DataTable>
+                                        </div>
+
+
+                                    </div>
+                                </div>
                             </TabPanel>
                             <TabPanel header="NAS Whitelist">
                                 <div style={{flex: 1}}>

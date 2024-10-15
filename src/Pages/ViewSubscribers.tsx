@@ -1,4 +1,4 @@
-import React, {FC, useState} from "react";
+import React, {FC, useEffect, useState} from "react";
 import {useQuery} from '@apollo/client';
 import {GET_SUBSCRIBERS} from "../graphql/queries";
 import {Button} from "primereact/button";
@@ -17,15 +17,20 @@ const ViewSubscribers: FC = () => {
     const page = Math.floor(first / rows) + 1;
     const size = rows;
 
-    const {loading, error, data} = useQuery(GET_SUBSCRIBERS, {
+    const {loading, error, data, refetch: refetchSubscriber} = useQuery(GET_SUBSCRIBERS, {
         variables: {page, size},
         notifyOnNetworkStatusChange: true,
     });
+
 
     const onPageChange = (event: any) => {
         setFirst(event.first);
         setRows(event.rows);
     };
+
+    useEffect(()=>{
+        refetchSubscriber();
+    }, [])
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error.message}</p>;
