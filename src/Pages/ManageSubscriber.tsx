@@ -59,6 +59,7 @@ import {InputSwitch} from "primereact/inputswitch";
 import {Messages} from "primereact/messages";
 import {ConfirmDialog, confirmDialog} from 'primereact/confirmdialog';
 import {Toast} from 'primereact/toast';
+import AppHeader from "../Components/header/AppHeader";
 
 const ManageSubscriber: FC = () => {
     const navigate = useNavigate();
@@ -571,7 +572,6 @@ const ManageSubscriber: FC = () => {
 
 
     const handlingSubscriberSave = useCallback(() => {
-        msgs.current.clear();
         if (mode === "edit") {
             updateSubscriber({
                 variables: {subscriberId: subscriberId, subscriber: formData},
@@ -622,7 +622,7 @@ const ManageSubscriber: FC = () => {
                 setSubscriberId(createSubscriberSuccess?.createSubscriber?.subscriberId)
                 setTimeout(() => {
                     stepperRef.current.nextCallback()
-                }, 2000)
+                }, 1000)
             }
         }
     }, [createSubscriberSuccess])
@@ -1142,300 +1142,331 @@ const ManageSubscriber: FC = () => {
         <React.Fragment>
             <Toast ref={toast}/>
             <ConfirmDialog/>
-            <div className="card justify-content-center w-full h-full mt-2">
-                <h1>Subscriber Create</h1>
+            <div className="card justify-content-center w-full h-full">
+                <AppHeader title={"Manage Subscriber"}/>
                 <Messages ref={msgs}/>
-                <div style={{flexBasis: '100%'}}>
-                    <Stepper ref={stepperRef}>
-                        <StepperPanel header="Basic Details">
-                            {createSubscriberLoader || updateSubscriberParametersLoader || updateSubscriberLoader || loadingSubscriber && (
-                                <div
-                                    style={{
-                                        backgroundColor: "rgba(255, 255, 255, 0.4)",
-                                        backdropFilter: "blur(5px)",
-                                        position: "absolute",
-                                        top: "0px",
-                                        bottom: "0px",
-                                        left: "0px",
-                                        right: "0px",
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                        zIndex: 9999,
-                                    }}
-                                >
-                                    <ProgressSpinner style={{width: "50px", height: "50px"}} strokeWidth="2"
-                                                     animationDuration=".5s"/>
-                                </div>
-                            )}
+                <div style={{
+                    marginTop: 150,
+                    top: 0,
+                    bottom: 0,
+                    display: "flex",
+                    justifyContent: 'center',
+                    height: "100%",
+                    left: 0,
+                    right: 0
+                }} className={'absolute'}>
+                    <div style={{width: "80%"}}>
+                        <Stepper ref={stepperRef}>
+                            <StepperPanel header="Basic Details">
+                                {createSubscriberLoader || updateSubscriberParametersLoader || updateSubscriberLoader || loadingSubscriber && (
+                                    <div
+                                        style={{
+                                            backgroundColor: "rgba(255, 255, 255, 0.4)",
+                                            backdropFilter: "blur(5px)",
+                                            position: "absolute",
+                                            top: "0px",
+                                            bottom: "0px",
+                                            left: "0px",
+                                            right: "0px",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                            zIndex: 9999,
+                                        }}
+                                    >
+                                        <ProgressSpinner style={{width: "50px", height: "50px"}} strokeWidth="2"
+                                                         animationDuration=".5s"/>
+                                    </div>
+                                )}
 
 
-                            <div>
-                                <div
-                                    className="p-fluid"
-                                    style={{
-                                        display: "grid",
-                                        gridTemplateColumns: "1fr 1fr",
-                                        columnGap: "2rem",
-                                        rowGap: "1.5rem",
-                                    }}
-                                >
-                                    <div className="p-field">
-                                        <label htmlFor="username">Username</label>
-                                        <InputText id="username" value={formData.username}
-                                                   onChange={(e) => handleInputChange(e, "username")}/>
-                                    </div>
-
-                                    <div className="p-field">
-                                        <label htmlFor="password">Password</label>
-                                        <IconField>
-                                            <InputIcon onClick={togglePasswordVisibility}
-                                                       className={`pi ${showPassword ? "pi-eye" : "pi-eye-slash"}`}></InputIcon>
-                                            <InputText
-                                                type={showPassword ? "text" : "password"}
-                                                id="password"
-                                                value={formData.password}
-                                                onChange={(e) => handleInputChange(e, "password")}
-                                            />
-                                        </IconField>
-                                    </div>
-
-                                    <div className="p-field">
-                                        <label htmlFor="status">Status</label>
-                                        <Dropdown
-                                            id="status"
-                                            value={formData.status}
-                                            options={statusOptions}
-                                            onChange={(e) => handleInputChange(e, "status")}
-                                            placeholder="Select a Status"
-                                        />
-                                    </div>
-                                    <div className="p-field">
-                                        <label htmlFor="contactNo">Contact No</label>
-                                        <InputText id="contactNo" value={formData.contactNo}
-                                                   onChange={(e) => handleInputChange(e, "contactNo")}/>
-                                    </div>
-                                    <div className="p-field">
-                                        <label htmlFor="email">Email</label>
-                                        <InputText id="email" type="email" value={formData.email}
-                                                   onChange={(e) => handleInputChange(e, "email")}/>
-                                    </div>
-                                    <div className="p-field">
-                                        <label htmlFor="extId">External ID</label>
-                                        <InputText id="extId" value={formData.extId}
-                                                   onChange={(e) => handleInputChange(e, "extId")}/>
-                                    </div>
-                                    <div className="p-field">
-                                        <label htmlFor="realm">Realm</label>
-                                        <InputText id="realm" value={formData.realm}
-                                                   onChange={(e) => handleInputChange(e, "realm")}/>
-                                    </div>
-                                    <div className="p-field">
-                                        <label htmlFor="type">Type</label>
-                                        <Dropdown id="type" value={formData.type} options={typeOptions}
-                                                  onChange={(e) => handleInputChange(e, "type")}
-                                                  placeholder="Select a Type"/>
-                                    </div>
-                                </div>
-                        </div>
-
-                        <div className="flex pt-4 justify-content-end">
-                            <Button label="Next" icon="pi pi-arrow-right" iconPos="right"
-                                    onClick={handlingSubscriberSave}/>
-                        </div>
-                    </StepperPanel>
-                    <StepperPanel header="Parameter Details">
-                        <TabView onTabChange={handleTabChange} activeIndex={activeIndex}>
-                            <TabPanel header="Plan Information">
                                 <div>
-                                    <div className="p-fluid"
-                                         style={{
-                                             display: 'grid',
-                                             gridTemplateColumns: '1fr 1fr',
-                                             columnGap: '2rem',
-                                             rowGap: '1.5rem'
-                                         }}>
-                                        <div className="p-field" style={{marginRight: '1rem'}}>
-                                            <label htmlFor="type">Plan</label>
+                                    <div
+                                        className="p-fluid"
+                                        style={{
+                                            display: "grid",
+                                            gridTemplateColumns: "1fr 1fr",
+                                            columnGap: "2rem",
+                                            rowGap: "1.5rem",
+                                        }}
+                                    >
+                                        <div className="p-field">
+                                            <label htmlFor="username">Username</label>
+                                            <InputText id="username" value={formData.username}
+                                                       onChange={(e) => handleInputChange(e, "username")}/>
+                                        </div>
+
+                                        <div className="p-field">
+                                            <label htmlFor="password">Password</label>
+                                            <IconField>
+                                                <InputIcon onClick={togglePasswordVisibility}
+                                                           className={`pi ${showPassword ? "pi-eye" : "pi-eye-slash"}`}></InputIcon>
+                                                <InputText
+                                                    type={showPassword ? "text" : "password"}
+                                                    id="password"
+                                                    value={formData.password}
+                                                    onChange={(e) => handleInputChange(e, "password")}
+                                                />
+                                            </IconField>
+                                        </div>
+
+                                        <div className="p-field">
+                                            <label htmlFor="status">Status</label>
                                             <Dropdown
-                                                loading={loadingPlans}
-                                                id="type"
-                                                value={formData.planId ?? ""}
-                                                options={planOptions}
-                                                onChange={handleChangePlan}
-                                                placeholder="Select Plan"
+                                                id="status"
+                                                value={formData.status}
+                                                options={statusOptions}
+                                                onChange={(e) => handleInputChange(e, "status")}
+                                                placeholder="Select a Status"
                                             />
                                         </div>
-                                    </div>
-
-                                    <Card title="Description">
-                                        <p className="m-0">{plans?.getPlans?.filter((plan: IPlan) => plan.planId === formData.planId)?.[0]?.description}</p>
-                                    </Card>
-
-                                    <Divider/>
-                                    <div style={{
-                                        display: 'flex',
-                                        gap: '2rem',
-                                        justifyContent: 'space-between',
-                                        flexWrap: 'wrap'
-                                    }}>
-                                        <div style={{flex: 1}}>
-                                            <h4>Parameter Overrides</h4>
-                                            <DataTable value={localParameters ?? []}>
-                                                <Column field="parameterName" header="Parameter Name"></Column>
-                                                <Column field="parameterValue" header="Parameter Value"></Column>
-                                                <Column field="parameterOverrideValue" body={ParameterOverrideValue}
-                                                        header="Override Value"></Column>
-                                            </DataTable>
+                                        <div className="p-field">
+                                            <label htmlFor="contactNo">Contact No</label>
+                                            <InputText id="contactNo" value={formData.contactNo}
+                                                       onChange={(e) => handleInputChange(e, "contactNo")}/>
                                         </div>
-
-                                        <div style={{flex: 1}}>
-                                            <h4>Attribute Overrides</h4>
-                                            <DataTable value={localAttributes ?? []}>
-                                                <Column field="attributeName" header="Attribute Name"></Column>
-                                                <Column field="attributeValue" header="Attribute Value"></Column>
-                                                <Column field="attributeOverrideValue" body={AttributeOverrideValue}
-                                                        header="Override Value"></Column>
-                                            </DataTable>
+                                        <div className="p-field">
+                                            <label htmlFor="email">Email</label>
+                                            <InputText id="email" type="email" value={formData.email}
+                                                       onChange={(e) => handleInputChange(e, "email")}/>
+                                        </div>
+                                        <div className="p-field">
+                                            <label htmlFor="extId">External ID</label>
+                                            <InputText id="extId" value={formData.extId}
+                                                       onChange={(e) => handleInputChange(e, "extId")}/>
+                                        </div>
+                                        <div className="p-field">
+                                            <label htmlFor="realm">Realm</label>
+                                            <InputText id="realm" value={formData.realm}
+                                                       onChange={(e) => handleInputChange(e, "realm")}/>
+                                        </div>
+                                        <div className="p-field">
+                                            <label htmlFor="type">Type</label>
+                                            <Dropdown id="type" value={formData.type} options={typeOptions}
+                                                      onChange={(e) => handleInputChange(e, "type")}
+                                                      placeholder="Select a Type"/>
                                         </div>
                                     </div>
                                 </div>
-                            </TabPanel>
-                            <TabPanel header="Parameters & Attributes">
-                                <div className="card">
-                                    <div style={{
-                                        display: 'flex',
-                                        gap: '2rem',
-                                        justifyContent: 'space-between',
-                                        flexWrap: 'wrap'
-                                    }}>
+
+                                <div className="flex pt-4 justify-content-end">
+                                    <Button label="Next" icon="pi pi-arrow-right" severity="secondary" iconPos="right"
+                                            onClick={handlingSubscriberSave}/>
+                                </div>
+                            </StepperPanel>
+                            <StepperPanel header="Parameter Details">
+                                <TabView onTabChange={handleTabChange} activeIndex={activeIndex}>
+                                    <TabPanel header="Plan Information">
+                                        <div>
+                                            <div className="p-fluid"
+                                                 style={{
+                                                     display: 'grid',
+                                                     gridTemplateColumns: '1fr 1fr',
+                                                     columnGap: '2rem',
+                                                     rowGap: '1.5rem'
+                                                 }}>
+                                                <div className="p-field" style={{marginRight: '1rem'}}>
+                                                    <label htmlFor="type">Plan</label>
+                                                    <Dropdown
+                                                        loading={loadingPlans}
+                                                        id="type"
+                                                        value={formData.planId ?? ""}
+                                                        options={planOptions}
+                                                        onChange={handleChangePlan}
+                                                        placeholder="Select Plan"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <Card title="Description">
+                                                <p className="m-0">{plans?.getPlans?.filter((plan: IPlan) => plan.planId === formData.planId)?.[0]?.description}</p>
+                                            </Card>
+
+                                            <Divider/>
+                                            <div style={{
+                                                display: 'flex',
+                                                gap: '2rem',
+                                                justifyContent: 'space-between',
+                                                flexWrap: 'wrap'
+                                            }}>
+                                                <div style={{flex: 1}}>
+                                                    <h4>Parameter Overrides</h4>
+                                                    <DataTable value={localParameters ?? []}>
+                                                        <Column field="parameterName" header="Parameter Name"></Column>
+                                                        <Column field="parameterValue"
+                                                                header="Parameter Value"></Column>
+                                                        <Column field="parameterOverrideValue"
+                                                                body={ParameterOverrideValue}
+                                                                header="Override Value"></Column>
+                                                    </DataTable>
+                                                </div>
+
+                                                <div style={{flex: 1}}>
+                                                    <h4>Attribute Overrides</h4>
+                                                    <DataTable value={localAttributes ?? []}>
+                                                        <Column field="attributeName" header="Attribute Name"></Column>
+                                                        <Column field="attributeValue"
+                                                                header="Attribute Value"></Column>
+                                                        <Column field="attributeOverrideValue"
+                                                                body={AttributeOverrideValue}
+                                                                header="Override Value"></Column>
+                                                    </DataTable>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </TabPanel>
+                                    <TabPanel header="Parameters & Attributes">
+                                        <div className="card">
+                                            <div style={{
+                                                display: 'flex',
+                                                gap: '2rem',
+                                                justifyContent: 'space-between',
+                                                flexWrap: 'wrap'
+                                            }}>
+                                                <div style={{flex: 1}}>
+                                                    <h4>Subscriber Attributes</h4>
+                                                    <div
+                                                        className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
+                                                        <Button onClick={handleAddSubscriberAttribute}>Add
+                                                            Attribute</Button>
+                                                    </div>
+                                                    <DataTable value={localSubscriberAttribute ?? []}>
+                                                        <Column field="attributeName" body={SubscriberAttributeName}
+                                                                header="Attribute Name"></Column>
+                                                        <Column field="attributeValue" header="Attribute Value"
+                                                                body={SubscriberAttributeValue}></Column>
+                                                        <Column header="Actions"
+                                                                body={SubscriberAttributeButtons}></Column>
+                                                    </DataTable>
+                                                </div>
+
+                                                <div style={{flex: 1}}>
+                                                    <h4>Subscriber Parameters</h4>
+                                                    <div
+                                                        className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
+                                                        <Button onClick={handleAddSubscriberParameter}>Add
+                                                            Parameter</Button>
+                                                    </div>
+                                                    <DataTable value={localSubscriberParameter ?? []}>
+                                                        <Column field="parameterName" body={SubscriberParameterName}
+                                                                header="Parameter Name"></Column>
+                                                        <Column field="parameterValue" header="Parameter Value"
+                                                                body={SubscriberParameterValue}></Column>
+
+                                                        <Column field="rejectOnFailure" header="Reject On Failure"
+                                                                body={SubscriberParameterRejectOnFailure}></Column>
+
+                                                        <Column header="Actions"
+                                                                body={SubscriberParameterButtons}></Column>
+                                                    </DataTable>
+                                                </div>
+
+
+                                            </div>
+                                        </div>
+                                    </TabPanel>
+                                    <TabPanel header="NAS Whitelist">
                                         <div style={{flex: 1}}>
-                                            <h4>Subscriber Attributes</h4>
                                             <div
                                                 className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
-                                                <Button onClick={handleAddSubscriberAttribute}>Add Attribute</Button>
+                                                <Button onClick={handleAddNas}>Add NAS</Button>
                                             </div>
-                                            <DataTable value={localSubscriberAttribute ?? []}>
-                                                <Column field="attributeName" body={SubscriberAttributeName}
-                                                        header="Attribute Name"></Column>
-                                                <Column field="attributeValue" header="Attribute Value"
-                                                        body={SubscriberAttributeValue}></Column>
-                                                <Column header="Actions"
-                                                        body={SubscriberAttributeButtons}></Column>
+
+                                            <DataTable value={localNasWhitelist ?? []}>
+                                                <Column field="nasIdPattern" header="NAS ID Pattern"
+                                                        body={NasIdPatternValue}></Column>
+                                                <Column header="Action"
+                                                        body={NasActionButtons}></Column>
                                             </DataTable>
                                         </div>
 
+                                    </TabPanel>
+                                    <TabPanel header="Device Whitelist">
                                         <div style={{flex: 1}}>
-                                            <h4>Subscriber Parameters</h4>
                                             <div
                                                 className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
-                                                <Button onClick={handleAddSubscriberParameter}>Add Parameter</Button>
+                                                <Button onClick={handleAddDevice}>Add Device</Button>
                                             </div>
-                                            <DataTable value={localSubscriberParameter ?? []}>
-                                                <Column field="parameterName" body={SubscriberParameterName}
-                                                        header="Parameter Name"></Column>
-                                                <Column field="parameterValue" header="Parameter Value"
-                                                        body={SubscriberParameterValue}></Column>
 
-                                                <Column field="rejectOnFailure" header="Reject On Failure"
-                                                        body={SubscriberParameterRejectOnFailure}></Column>
+                                            <DataTable value={localDeviceWhitelist ?? []}>
+                                                <Column field="MACAddress" header="MAC Address"
+                                                        body={DeviceMacAddress}></Column>
 
-                                                <Column header="Actions"
-                                                        body={SubscriberParameterButtons}></Column>
+                                                <Column field="description" header="Description"
+                                                        body={DeviceDescription}></Column>
+
+                                                <Column field="status" header="Status"
+                                                        body={DeviceStatus}></Column>
+
+                                                <Column header="Action"
+                                                        body={DeviceActionButtons}></Column>
                                             </DataTable>
                                         </div>
+                                    </TabPanel>
+                                    <TabPanel header="Attribute Value Pair">
+                                        <div style={{flex: 1}}>
+                                            <div
+                                                className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
+                                                <Button onClick={handleAddAVP}>Add AVP</Button>
+                                            </div>
+
+                                            <DataTable value={localSubscriberAVP ?? []}>
+                                                <Column field={"attribute"} header="Attribute"
+                                                        body={Attribute}></Column>
+                                                <Column field={"attributeGroup"} header="NAS Attribute Group"
+                                                        body={NasAttributeGroup}></Column>
+                                                <Column field={"operation"} header="Operation"
+                                                        body={Operation}></Column>
+                                                <Column field={"value"} header="Value" body={Value}></Column>
+                                                <Column field={"status"} header="Status"
+                                                        body={SubscriberAVPState}></Column>
+                                                <Column header="Action" body={ActionAVPsButtons}></Column>
+                                            </DataTable>
+                                        </div>
+                                    </TabPanel>
+
+                                    <TabPanel header="Profile Overrides">
+                                        <div style={{flex: 1}}>
+                                            <div
+                                                className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
+                                                <Button onClick={addProfileOverride}>Add Profile Override</Button>
+                                            </div>
+                                            <DataTable value={localProfileSubscriberOverrideAvps ?? []}>
+                                                <Column field={"overrideKey"} body={OverrideKey}
+                                                        header="Override Key"></Column>
+                                                <Column field={"overrideValue"} header="Override Value"
+                                                        body={OverrideValue}></Column>
+                                                <Column field={"overrideWhen"} header="Override When"
+                                                        body={ProfileState}></Column>
+                                                <Column header="Action" body={ActionProfileOverrideButtons}></Column>
+                                            </DataTable>
+                                        </div>
+                                    </TabPanel>
+                                    {/*<TabPanel header="Links"></TabPanel>*/}
 
 
-                                    </div>
-                                </div>
-                            </TabPanel>
-                            <TabPanel header="NAS Whitelist">
-                                <div style={{flex: 1}}>
-                                    <div className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
-                                        <Button onClick={handleAddNas}>Add NAS</Button>
-                                    </div>
-
-                                    <DataTable value={localNasWhitelist ?? []}>
-                                        <Column field="nasIdPattern" header="NAS ID Pattern"
-                                                body={NasIdPatternValue}></Column>
-                                        <Column header="Action"
-                                                body={NasActionButtons}></Column>
-                                    </DataTable>
-                                </div>
-
-                            </TabPanel>
-                            <TabPanel header="Device Whitelist">
-                                <div style={{flex: 1}}>
-                                    <div className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
-                                        <Button onClick={handleAddDevice}>Add Device</Button>
-                                    </div>
-
-                                    <DataTable value={localDeviceWhitelist ?? []}>
-                                        <Column field="MACAddress" header="MAC Address"
-                                                body={DeviceMacAddress}></Column>
-
-                                        <Column field="description" header="Description"
-                                                body={DeviceDescription}></Column>
-
-                                        <Column field="status" header="Status"
-                                                body={DeviceStatus}></Column>
-
-                                        <Column header="Action"
-                                                body={DeviceActionButtons}></Column>
-                                    </DataTable>
-                                </div>
-                            </TabPanel>
-                            <TabPanel header="Attribute Value Pair">
-                                <div style={{flex: 1}}>
-                                    <div className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
-                                        <Button onClick={handleAddAVP}>Add AVP</Button>
-                                    </div>
-
-                                    <DataTable value={localSubscriberAVP ?? []}>
-                                        <Column field={"attribute"} header="Attribute" body={Attribute}></Column>
-                                        <Column field={"attributeGroup"} header="NAS Attribute Group"
-                                                body={NasAttributeGroup}></Column>
-                                        <Column field={"operation"} header="Operation" body={Operation}></Column>
-                                        <Column field={"value"} header="Value" body={Value}></Column>
-                                        <Column field={"status"} header="Status"
-                                                body={SubscriberAVPState}></Column>
-                                        <Column header="Action" body={ActionAVPsButtons}></Column>
-                                    </DataTable>
-                                </div>
-                            </TabPanel>
-
-                            <TabPanel header="Profile Overrides">
-                                <div style={{flex: 1}}>
-                                    <div className={"flex w-full bg-gray-200 p-2 rounded-lg justify-content-end"}>
-                                        <Button onClick={addProfileOverride}>Add Profile Override</Button>
-                                    </div>
-                                    <DataTable value={localProfileSubscriberOverrideAvps ?? []}>
-                                        <Column field={"overrideKey"} body={OverrideKey} header="Override Key"></Column>
-                                        <Column field={"overrideValue"} header="Override Value"
-                                                body={OverrideValue}></Column>
-                                        <Column field={"overrideWhen"} header="Override When"
-                                                body={ProfileState}></Column>
-                                        <Column header="Action" body={ActionProfileOverrideButtons}></Column>
-                                    </DataTable>
-                                </div>
-                            </TabPanel>
-                            <TabPanel header="Links"></TabPanel>
-
-
-                        </TabView>
-
-
-                        <div className="flex pt-4 justify-content-between">
+                                </TabView>
+                            </StepperPanel>
+                        </Stepper>
+                        <div className="flex pt-4 justify-content-between" style={{
+                            bottom: 30,
+                            position: 'fixed',
+                            width: '80%',
+                            backdropFilter: 'blur(10px)',
+                            background: 'rgba(255, 255, 255, 0.1)'
+                        }}>
                             <Button label="Back" severity="secondary" icon="pi pi-arrow-left"
                                     onClick={() => stepperRef.current.prevCallback()}/>
                             {/*<Button label="Next" icon="pi pi-arrow-right" iconPos="right" onClick={() => stepperRef.current.nextCallback()} />*/}
-                            {activeIndex === 6 &&
-                                <Button label="Save" icon="pi pi-check" onClick={handleUpdateSubscriber}
-                                        className="p-button-success"/>}
+
+                            <Button label="Save" severity="secondary" icon="pi pi-save"
+                                    onClick={handleUpdateSubscriber}/>
                         </div>
-                    </StepperPanel>
-                </Stepper>
+                    </div>
+
                 </div>
+
+
             </div>
 
         </React.Fragment>

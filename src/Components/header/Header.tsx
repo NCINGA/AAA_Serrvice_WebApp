@@ -54,11 +54,11 @@ const Header: FC = () => {
     const end = (
         <div className="flex align-items-center gap-2">
             <div className="flex items-center gap-2">
-                <Avatar image="https://primefaces.org/cdn/primereact/images/avatar/amyelsner.png" shape="circle" />
+                <Avatar label="D" size="small" style={{ backgroundColor: '#2196F3', color: '#ffffff' }} shape="circle" />
 
                 <div className="flex flex-col">
                     <div className="flex items-center">
-                        <span className="p-2 text-white">shehan.salinda92@gmail.com</span>
+                        <span className="p-2 text-white">demo</span>
                     </div>
                 </div>
             </div>
@@ -68,7 +68,7 @@ const Header: FC = () => {
     return (<React.Fragment>
         <div className="bg-blue-800 fixed w-full h-4rem z-3">
 
-            <Menubar className={"bg-blue-800 h-4rem border-none rounded-none"} model={[]} start={<span className={'text-white'}>Web Console</span>} end={end}/>
+            <Menubar className={"bg-blue-800 h-4rem border-none rounded-none"} model={[]} start={<span className={'text-white'} style={{fontSize:18, fontWeight:'bold', marginLeft:20}}>Web Console</span>} end={end}/>
         </div>
 
 

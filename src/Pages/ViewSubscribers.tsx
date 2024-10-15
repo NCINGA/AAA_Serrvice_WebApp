@@ -6,8 +6,9 @@ import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
 import {Skeleton} from "primereact/skeleton";
 import {Paginator} from "primereact/paginator";
-import { useNavigate } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import {ISubscriber} from "../interface/data";
+import AppHeader from "../Components/header/AppHeader";
 
 const ViewSubscribers: FC = () => {
     const navigate = useNavigate();
@@ -56,30 +57,33 @@ const ViewSubscribers: FC = () => {
 
     return (
         <React.Fragment>
-            <div>
-                <h1>Subscribers</h1>
-                <DataTable value={data?.getSubscribersByPage?.content ?? []} tableStyle={{minWidth: '50rem'}}>
-                    <Column field="subscriberId" header="ID" body={loading && <Skeleton/>}/>
-                    <Column field="username" header="Username" body={loading && <Skeleton/>}/>
-                    <Column field="email" header="Email" body={loading && <Skeleton/>}/>
-                    <Column field="status" header="Status" body={loading && <Skeleton/>}/>
-                    <Column field="extId" header="Ext ID" body={loading && <Skeleton/>}/>
-                    <Column field="createdDate" header="Created Time"
-                            body={loading && <Skeleton/>}/>
-                    <Column field="updatedTime" header="Updated Time"
-                            body={loading && <Skeleton/>}/>
+            <div className="card justify-content-center w-full h-full">
+                <AppHeader title={"View Subscriber"}/>
+                <div style={{marginTop: 100, justifyContent:'center', left:0, right:0}} className={'absolute'}>
+                    <DataTable style={{width:"100%"}} value={data?.getSubscribersByPage?.content ?? []} tableStyle={{minWidth: '50rem'}}>
+                        <Column field="subscriberId" header="ID" body={loading && <Skeleton/>}/>
+                        <Column field="username" header="Username" body={loading && <Skeleton/>}/>
+                        <Column field="email" header="Email" body={loading && <Skeleton/>}/>
+                        <Column field="status" header="Status" body={loading && <Skeleton/>}/>
+                        <Column field="extId" header="Ext ID" body={loading && <Skeleton/>}/>
+                        <Column field="createdDate" header="Created Time"
+                                body={loading && <Skeleton/>}/>
+                        <Column field="updatedTime" header="Updated Time"
+                                body={loading && <Skeleton/>}/>
                     <Column body={ActionButtons} header="Actions"/>
-                </DataTable>
-                <div className="card">
-                    <Paginator
-                        first={first}
-                        rows={rows}
-                        totalRecords={data?.getSubscribersByPage?.totalElements}
-                        rowsPerPageOptions={[3, 8, 10]}
-                        onPageChange={onPageChange}
-                        // Adjust the paginator to reflect the 1-based page index
-                    />
+                    </DataTable>
+                    <div className="card">
+                        <Paginator
+                            first={first}
+                            rows={rows}
+                            totalRecords={data?.getSubscribersByPage?.totalElements}
+                            rowsPerPageOptions={[3, 8, 10]}
+                            onPageChange={onPageChange}
+                            // Adjust the paginator to reflect the 1-based page index
+                        />
+                    </div>
                 </div>
+
             </div>
         </React.Fragment>
     );

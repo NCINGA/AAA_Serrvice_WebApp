@@ -1,6 +1,6 @@
-import React, {useState} from 'react'
+import React, {useState} from 'react';
 import {PrimeReactProvider} from 'primereact/api';
-import './App.css'
+import './App.css';
 import SideMenu from "./Components/side-menu/SideMenu";
 import Header from "./Components/header/Header";
 import client from "./graphql/apploClient";
@@ -20,27 +20,26 @@ function App() {
         <React.Fragment>
             <PrimeReactProvider>
                 <ApolloProvider client={client}>
-                    <Header/>
-                    <div className="app">
-                        <SideMenu onToggle={handleMenuToggle}/>
-                        <div className={`${isMenuExpanded ? 'expanded' : 'collapsed'}`}>
-                        </div>
-                        <div className={"main"}>
-                            <div className={"content"}>
-                                <Router>
+                    <Router>
+                        <Header/>
+                        <div className="app">
+                            <SideMenu onToggle={handleMenuToggle}/>
+                            <div className={`${isMenuExpanded ? 'expanded' : 'collapsed'}`}></div>
+                            <div className={"main"}>
+                                <div className={"content"}>
+                                    {/* Define Routes inside Routes component */}
                                     <Routes>
                                         <Route path="/view-subscribers" element={<ViewSubscribers/>}/>
                                         <Route path="/manage-subscriber" element={<ManageSubscriber/>}/>
-
                                     </Routes>
-                                </Router>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </Router>
                 </ApolloProvider>
             </PrimeReactProvider>
         </React.Fragment>
-    )
+    );
 }
 
-export default App
+export default App;
