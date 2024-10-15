@@ -19,7 +19,7 @@ function App() {
     const [isMenuExpanded, setIsMenuExpanded] = useState(true);
     const [loggedIn, setLoggedIn] = useState(isAuthenticated());
 
-    const handleMenuToggle = (isExpanded) => {
+    const handleMenuToggle = (isExpanded: any) => {
         setIsMenuExpanded(isExpanded);
     };
 

@@ -149,6 +149,7 @@ const ManageSubscriber: FC = () => {
             }
         },
         onError: (error) => {
+            console.log(error)
         }
     });
 

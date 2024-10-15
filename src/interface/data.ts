@@ -116,30 +116,30 @@ export interface IState {
 export interface ISubscriberAttribute {
     id: number;
     subscriberId?: number;
-    attributeName?: String
-    attributeValue?: String
+    attributeName?: string
+    attributeValue?: string
 }
 
 export interface ISubscriberParameter {
     id: number;
     subscriberId?: number;
-    parameterName?: String
-    parameterValue?: String
+    parameterName?: string
+    parameterValue?: string
     rejectOnFailure?: number
 }
 
 
 export interface IAttributeMeta {
     id?: number
-    attribute?: String
+    attribute?: string
 }
 
 export interface IParameterMeta {
     id?: number
-    parameter?: String
+    parameter?: string
 }
 export interface IProfile {
     id?: number
-    profile?: String
+    profile?: string
 }
 

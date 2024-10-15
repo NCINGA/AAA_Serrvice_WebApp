@@ -1,7 +1,8 @@
 import React, {FC} from "react";
 import './header.css'
 import {Menubar} from 'primereact/menubar';
-import {Avatar} from 'primereact/avatar';
+import {Avatar} from "primereact/avatar";
+
 
 const Header: FC = () => {
     // const itemRenderer = (item: any) => (
@@ -54,7 +55,7 @@ const Header: FC = () => {
     const end = (
         <div className="flex align-items-center gap-2">
             <div className="flex items-center gap-2">
-                <Avatar label="D" size="small" style={{ backgroundColor: '#2196F3', color: '#ffffff' }} shape="circle" />
+                <Avatar label="D" style={{ backgroundColor: '#2196F3', color: '#ffffff' }} shape="circle" />
 
                 <div className="flex flex-col">
                     <div className="flex items-center">
