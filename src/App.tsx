@@ -6,9 +6,11 @@ import Header from "./Components/header/Header";
 import client from "./graphql/apploClient";
 import {ApolloProvider} from "@apollo/client";
 import {BrowserRouter as Router, Navigate, Route, Routes} from "react-router-dom";
-import ViewSubscribers from "./Pages/ViewSubscribers";
+import ViewPlans from "./Pages/ViewPlans";
 import ManageSubscriber from "./Pages/ManageSubscriber";
 import LoginPage from "./Pages/LoginPage";
+import ViewSubscribers from "./Pages/ViewSubscribers.tsx";
+import ManagePlan from "./Pages/ManagePlan.tsx";
 
 
 const isAuthenticated = () => {
@@ -41,9 +43,12 @@ function App() {
                                     <div className={"main"}>
                                         <div className={"content"}>
                                             <Routes>
+                                                <Route path="/view-plans" element={<ViewPlans/>}/>
                                                 <Route path="/view-subscribers" element={<ViewSubscribers/>}/>
                                                 <Route path="/manage-subscriber" element={<ManageSubscriber/>}/>
+                                                <Route path="/manage-plan" element={<ManagePlan/>}/>
                                                 <Route path="*" element={<Navigate to="/view-subscribers" replace/>}/>
+                                                <Route path="*" element={<Navigate to="/view-plans" replace/>}/>
                                             </Routes>
                                         </div>
                                     </div>

@@ -1,9 +1,9 @@
 
 
 export interface IPlan {
-    planId: number;
-    planType?: string;
-    planName: string;
+    planId?: number | null | undefined;
+    typeId?: number | null;
+    planName?: string;
     description?: string;
 }
 

@@ -26,6 +26,7 @@ import {
     GET_SUBSCRIBER_BY_ID,
     GET_SUBSCRIBER_PARAMETER,
     UPDATE_SUBSCRIBER,
+    DELETE_SUBSCRIBER,
     UPDATE_SUBSCRIBER_PARAMETERS
 } from "../graphql/queries";
 import {useLazyQuery, useMutation} from "@apollo/client";
@@ -231,6 +232,17 @@ const ManageSubscriber: FC = () => {
         data: updateSubscriberSuccess
     }] = useMutation(
         UPDATE_SUBSCRIBER,
+        {
+            notifyOnNetworkStatusChange: true,
+        }
+    );
+
+    const [deleteSubscriber, {
+        loading: deleteSubscriberLoader,
+        error: deleteSubscriberError,
+        data: deleteSubscriberSuccess
+    }] = useMutation(
+        DELETE_SUBSCRIBER,
         {
             notifyOnNetworkStatusChange: true,
         }
@@ -662,6 +674,20 @@ const ManageSubscriber: FC = () => {
 
 
     useEffect(() => {
+        if (deleteSubscriberError !== undefined) {
+
+            toast.current.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: `Failed operation !!!`,
+                life: 3000
+            });
+
+        }
+    }, [deleteSubscriberError])
+
+
+    useEffect(() => {
         if (updateSubscriberSuccess !== undefined) {
             if (updateSubscriberSuccess?.updateSubscriber?.responseCode === 4) {
                 stepperRef.current.nextCallback();
@@ -669,6 +695,11 @@ const ManageSubscriber: FC = () => {
             }
         }
     }, [updateSubscriberSuccess])
+
+
+
+
+
 
     const handleInputChange = useCallback((e: any, field: any) => {
         const value = e.target ? e.target.value : e.value;
@@ -1163,7 +1194,7 @@ const ManageSubscriber: FC = () => {
                         <Messages ref={msgs}/>
                         <Stepper ref={stepperRef}>
                             <StepperPanel header="Basic Details">
-                                {createSubscriberLoader || updateSubscriberParametersLoader || updateSubscriberLoader || loadingSubscriber && (
+                                {createSubscriberLoader || updateSubscriberParametersLoader || updateSubscriberLoader || deleteSubscriberLoader|| loadingSubscriber && (
                                     <div
                                         style={{
                                             backgroundColor: "rgba(255, 255, 255, 0.4)",

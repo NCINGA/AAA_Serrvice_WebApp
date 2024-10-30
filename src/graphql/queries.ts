@@ -76,6 +76,12 @@ export const UPDATE_SUBSCRIBER = gql`
     }
 `;
 
+export const DELETE_SUBSCRIBER = gql`
+    mutation DeleteSubscriber($subscriberId: Int!) {
+        deleteSubscriber(subscriberId: $subscriberId)
+    }
+`;
+
 
 export const UPDATE_SUBSCRIBER_PARAMETERS = gql`
     mutation updateSubscriberParameters(
@@ -101,6 +107,23 @@ export const APPLY_PLAN = gql`
     }
 `;
 
+export const CREATE_PLANS = gql`
+    mutation CreatePlan(
+        $typeId: Int
+        $planName: String
+        $description: String
+    ) {
+        createPlan(
+            plan: {
+                typeId: $typeId
+                planName: $planName
+                description: $description
+            }
+        )
+    }
+`;
+
+
 
 export const GET_PLANS = gql`
     query GetPlans {
@@ -109,9 +132,45 @@ export const GET_PLANS = gql`
 
 `;
 
+export const UPDATE_PLANS = gql`
+    mutation UpdatePlan(
+        $planId: Int!,  
+        $typeId: Int,
+        $planName: String!,
+        $description: String!
+    ) {
+        updatePlan(
+            planId: $planId,
+            plan: {
+                typeId: $typeId,
+                planName: $planName,
+                description: $description
+            }
+        )
+    }
+`;
+export const DELETE_PLANS = gql`
+    mutation DeletePlan($planId: Int!) {
+        deletePlan(planId: $planId)
+    }
+`;
+
+
 export const GET_ATTRIBUTE_META = gql`
     query GetAttributeMeta {
         getAttributeMeta {
+            id
+            attribute
+        }
+    }
+
+`;
+
+
+
+export const GET_PLAN_ATTRIBUTE_META = gql`
+    query GetPlanAttributeMeta {
+        getPlanAttributeMeta {
             id
             attribute
         }
@@ -288,5 +347,15 @@ export const GET_SUBSCRIBER_BY_ID = gql`
 `
 
 
+export const GET_PLAN_BY_ID = gql`
+    query GetPlansById($planId: Int!) {
+        getPlansById(planId: $planId) {
+            planId
+            typeId
+            planName
+            description
+        }
+    }
 
+`
 

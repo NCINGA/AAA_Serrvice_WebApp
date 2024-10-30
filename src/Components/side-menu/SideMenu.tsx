@@ -32,6 +32,22 @@ const SideMenu: React.FC<SideMenuProps> = ({ onToggle }) => {
                     command: () => navigate('/view-subscribers')
                 }
             ]
+        },
+        {
+            label: 'Plans',
+            icon: 'pi pi-fw pi-chart-pie',
+            items: [
+                {
+                    label: 'Add',
+                    icon: 'pi pi-fw pi-plus',
+                    command: () => navigate('/manage-plan?mode=new')
+                },
+                {
+                    label: 'View',
+                    icon: 'pi pi-fw pi-list',
+                    command: () => navigate('/view-plans')
+                }
+            ]
         }
     ];
 
