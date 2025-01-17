@@ -237,10 +237,10 @@ const ManageSubscriber: FC = () => {
         }
     );
 
-    const [deleteSubscriber, {
+    const [, {
         loading: deleteSubscriberLoader,
         error: deleteSubscriberError,
-        data: deleteSubscriberSuccess
+        
     }] = useMutation(
         DELETE_SUBSCRIBER,
         {
@@ -540,7 +540,10 @@ const ManageSubscriber: FC = () => {
     const applySelectedPlan = (e: any) => {
         handleInputChange(e, 'planId');
         const selectedPlan: IPlan = plans?.getPlans.find((plan: IPlan) => plan.planId === e.value);
-        if (selectedPlan) {
+        if 
+        (selectedPlan &&
+            selectedPlan.planId !== null &&
+            selectedPlan.planId !== undefined) {
             setPlanId(selectedPlan.planId);
             applyPlan({
                 variables: {subscriberId: subscriberId, planId: selectedPlan.planId, state: "ACTIVE"}

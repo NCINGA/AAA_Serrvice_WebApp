@@ -1,10 +1,24 @@
 
 
+
+export interface IPlanProfile {
+
+    profileId: number; 
+    attributeGroup?: number; 
+    profileKey?: string; 
+    description?: string; 
+    state?: string; 
+  }
+  
+  
 export interface IPlan {
     planId?: number | null | undefined;
     typeId?: number | null;
+    type?: string;
     planName?: string;
     description?: string;
+    planProfiles?: IPlanProfile[];
+    planParameters?: IPlanParameter[] | any;
 }
 
 export interface IPlanAttribute {
@@ -141,5 +155,28 @@ export interface IParameterMeta {
 export interface IProfile {
     id?: number
     profile?: string
+}
+
+export interface IProfileMapping {
+    profileId?: number;
+    status: String;
+}
+
+
+export interface IPlanMappingProfile{
+    planId: number;
+    profiles: IProfileMapping[]
+}
+
+export interface IParameterMapping{
+    parameterName?: String;
+    parameterValue?: String;
+    value: string;
+    parameter: string;
+}
+
+export interface IPlanMappingParameter{
+    planId: number;
+    parameters: IParameterMapping[]
 }
 

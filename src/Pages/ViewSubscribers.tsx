@@ -18,7 +18,8 @@ const ViewSubscribers: FC = () => {
     const [rows, setRows] = useState(10);
     const [subscriberToDelete, setSubscriberToDelete] = useState<ISubscriber | null>(null); // Store selected subscriber
     const toast = useRef<any>(null);
-    const [deleteSubscriberSuccess, setDeleteSubscriberSuccess] = useState(null);
+    const [deleteSubscriberSuccess, setDeleteSubscriberSuccess] = useState<boolean | null>(null);
+
 
     const page = Math.floor(first / rows) + 1;
     const size = rows;
@@ -62,7 +63,9 @@ const ViewSubscribers: FC = () => {
     const handleDelete = () => {
         if (subscriberToDelete) {
             deleteSubscriber({ variables: { subscriberId: subscriberToDelete.subscriberId } }); // Proceed with deletion
-            setSubscriberToDelete(null); // Reset the subscriber to delete
+            setSubscriberToDelete(null);
+            console.log(deleteSubscriberSuccess);
+             // Reset the subscriber to delete
         }
     };
 
