@@ -1,0 +1,17 @@
+/* Ensure the DataTable container doesn't overflow */
+.data-table-container {
+    /*max-height: calc(100vh - 200px); !* Adjust this to fit your app's header height *!*/
+    overflow-y: auto; /* Enable vertical scrolling */
+    border: 1px solid var(--surface-d); /* Optional: To visually separate the table */
+    border-radius: 4px; /* Optional: For rounded corners */
+    background-color: var(--surface-a); /* Optional: To match app theme */
+}
+
+/* Fix the header position for DataTable */
+.p-datatable-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--surface-a); /* Match the theme */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for better visibility */
+}

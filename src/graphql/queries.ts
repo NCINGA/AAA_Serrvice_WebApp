@@ -8,7 +8,6 @@ export const GET_SUBSCRIBERS = gql`
             size
             totalElements
             content {
-                planId
                 subscriberId
                 username
                 status
@@ -24,6 +23,26 @@ export const GET_SUBSCRIBERS = gql`
         }
     }
 `;
+
+
+
+export const GET_PROFILES = gql`
+    query GetProfiles {
+        getProfiles
+    }
+`;
+
+export const GET_PLAN_TYPES = gql`
+    query GetPlanTypes {
+        getPlanTypes {
+            typeId
+            typeName
+            
+        }
+    }
+`;
+
+
 
 
 export const CREATE_NEW_SUBSCRIBER = gql`
@@ -347,6 +366,7 @@ export const GET_SUBSCRIBER_BY_ID = gql`
 `
 
 
+
 export const GET_PLAN_BY_ID = gql`
     query GetPlansById($planId: Int!) {
         getPlansById(planId: $planId) {
@@ -358,4 +378,136 @@ export const GET_PLAN_BY_ID = gql`
     }
 
 `
+export const DELETE_PROFILE = gql`
+    mutation DeleteProfile($profileId: Int!) {
+        deleteProfile(profileId: $profileId)
+    }
+`;
+
+export const CREATE_PROFILE = gql`
+    mutation CreateProfile(
+        $attributeGroup:Int
+        $profileKey:String
+        $description:String
+    ) {
+        createProfile(
+            profile: {
+                attributeGroup: $attributeGroup
+                profileKey: $profileKey
+                description: $description
+            }
+        )
+    }
+`;
+
+
+export const GET_PROFILE_BY_ID = gql`
+    query GetProfileById($profileId: Int!) {
+        getProfilesById(profileId: $profileId) {
+            profileId
+            attributeGroup
+            profileKey
+            description
+        }
+    }
+
+`
+
+export const UPDATE_PROFILE = gql`
+    mutation UpdateProfile(
+        $profileId:Int!,
+        $attributeGroup: Int!,
+        $profileKey: String!,
+        $description: String!
+    ) {
+        updateProfile(
+            profileId: $profileId,
+            profile: {
+                attributeGroup: $attributeGroup,
+                profileKey: $profileKey,
+                description: $description
+            }
+        )
+    }
+`;
+
+export const CREATE_AVP_PROFILE = gql`
+    mutation CreateAvpProfile(
+        
+        $profileId:Int
+        $avpName:String
+        $avpValue:String
+        $includeWhen:String
+        $status:String
+        $avpDefaultIfNull:String
+        $overrideEnabled:Int
+        
+    ) {
+        createAvpProfile(
+            avpProfile: {
+                profileId: $profileId
+                avpName: $avpName
+                avpValue: $avpValue
+                includeWhen: $includeWhen
+                status: $status
+                avpDefaultIfNull: $avpDefaultIfNull
+                overrideEnabled: $overrideEnabled
+            }
+        )
+    }
+`;
+
+export const UPDATE_AVP_PROFILE = gql`
+    mutation UpdateAvpProfile(
+        $id:Int!
+#        $profileId:Int!
+        $avpName:String!
+        $avpValue:String!
+        $includeWhen:String!
+        $status:String!
+        $avpDefaultIfNull:String
+        $overrideEnabled:Int!
+    ) {
+        updateAvpProfile(
+            id: $id,
+            avpProfile: {
+#                profileId: $profileId
+                avpName: $avpName
+                avpValue: $avpValue
+                includeWhen: $includeWhen
+                status: $status
+                avpDefaultIfNull: $avpDefaultIfNull
+                overrideEnabled: $overrideEnabled
+            }
+        )
+    }
+`;
+
+export const GET_PROFILE_AVP_BY_ID = gql`
+    query GetProfileAvpById($id: Int!) {
+        getProfileAvpById(id: $id)
+    }
+
+`
+
+export const DELETE_AVP_PROFILE = gql`
+    mutation DeleteAvpProfile($id: Int!) {
+        deleteAvpProfile(id: $id)
+    }
+`;
+
+export const GET_AVP_PROFILES = gql`
+    query GetAvpProfiles {
+        getAvpProfiles 
+    }
+`;
+
+
+
+
+
+
+
+
+
 
