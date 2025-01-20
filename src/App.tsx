@@ -11,6 +11,9 @@ import ManageSubscriber from "./Pages/ManageSubscriber";
 import LoginPage from "./Pages/LoginPage";
 import ViewSubscribers from "./Pages/ViewSubscribers.tsx";
 import ManagePlan from "./Pages/ManagePlan.tsx";
+import ManageProfile from "./Pages/ManageProfile.tsx";
+import ViewProfileManagement from "./Pages/ViewProfileManagement.tsx";
+import AvpAdd from "./Pages/AvpAdd.tsx";
 
 
 const isAuthenticated = () => {
@@ -45,10 +48,19 @@ function App() {
                                             <Routes>
                                                 <Route path="/view-plans" element={<ViewPlans/>}/>
                                                 <Route path="/view-subscribers" element={<ViewSubscribers/>}/>
+                                                <Route path="/view-profileManagement" element={<ViewProfileManagement/>}/>
+
                                                 <Route path="/manage-subscriber" element={<ManageSubscriber/>}/>
                                                 <Route path="/manage-plan" element={<ManagePlan/>}/>
+                                                <Route path="/manage-profile" element={<ManageProfile/>}/>
+                                                <Route path="/avp-add" element={<AvpAdd/>}/>
+
                                                 <Route path="*" element={<Navigate to="/view-subscribers" replace/>}/>
                                                 <Route path="*" element={<Navigate to="/view-plans" replace/>}/>
+                                                <Route path="*" element={<Navigate to="/view-profileManagement" replace/>}/>
+
+
+
                                             </Routes>
                                         </div>
                                     </div>
