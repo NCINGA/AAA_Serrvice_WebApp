@@ -1,6 +1,6 @@
 .side-menu {
     position: fixed;
-    background:#ffffff;
+    background: #ffffff;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -8,6 +8,7 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     transition: width 0.3s;
     height: 100%;
+    z-index: 100; /* Ensure it stays above the main content */
 }
 
 .toggle-button {
@@ -21,17 +22,15 @@
 .menu-container {
     transition: width 0.3s;
     height: 100%;
-    background:#ffffff;
+    background: #ffffff;
 }
 
 .menu-container.expanded {
     width: 300px;
-
 }
 
 .menu-container.collapsed {
     width: 60px;
-
 }
 
 .collapsed-icons {
@@ -42,7 +41,6 @@
 }
 
 .collapsed-item {
-
     position: relative;
     padding: 10px;
     cursor: pointer;
@@ -56,19 +54,16 @@
 }
 
 .menu-label {
-
     display: none; /* Hide labels by default */
 }
 
 .submenu {
-
     display: none;
     position: absolute;
     left: 100%;
-    width:150px;
+    width: 150px;
     top: 0;
     z-index: 1000;
-
 }
 
 .collapsed-item:hover .submenu {
@@ -76,7 +71,6 @@
 }
 
 .submenu .p-menubar-root-list {
-
     background-color: transparent; /* Remove gray background */
     box-shadow: none; /* Remove shadow */
 }
@@ -89,10 +83,16 @@
     display: none;
 }
 
-
 .custom-menubar .p-menubar {
-
     display: block !important;
 }
 
+/* Main content adjustment */
+.main-content {
+    margin-left: 60px; /* Default margin when menu is collapsed */
+    transition: margin-left 0.3s ease; /* Smooth transition */
+}
 
+.main-content.shifted {
+    margin-left: 300px; /* Adjust margin when menu is expanded */
+}
