@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useLazyQuery } from '@apollo/client';
-import { GET_PLANS, DELETE_PLANS, GET_PLAN_BY_ID } from "../graphql/queries";
+import { GET_PLANS, DELETE_PLANS, GET_PLAN_BY_ID,GET_PLAN_PROFILES,GET_PLAN_DETAILS_BY_ID} from "../graphql/queries";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -37,30 +37,51 @@ const ViewPlans: FC = () => {
         },
     });
 
-    const [getPlansById, { data: selectedPlanData, loading: selectedPlanLoading }] = useLazyQuery(GET_PLAN_BY_ID);
 
-    const onPageChange = (event) => {
-        setFirst(event.first);
-        setRows(event.rows);
-    };
 
-    useEffect(() => {
-        refetchPlan();
-    }, []);
+const [getPlansById, { data: selectedPlanData, loading: selectedPlanLoading }] = useLazyQuery(GET_PLAN_BY_ID);
 
-    const handleEdit = (plan) => {
-        getPlansById({ variables: { planId: plan.planId } });
-    };
+const [getPlanProfiles, { data: planProfilesData, loading: loadingPlanProfiles }] = useLazyQuery(GET_PLAN_PROFILES);
 
-    useEffect(() => {
-        if (selectedPlanData && !selectedPlanLoading) {
-            navigate(`/manage-plan`, {
-                state: { planData: selectedPlanData.getPlansById }
-            });
-        }
-    }, [selectedPlanData, selectedPlanLoading, navigate]);
+const [getPlanDetailById, { data: planDetails, loading: loadingPlanDetail }] = useLazyQuery(GET_PLAN_DETAILS_BY_ID);
 
-    const confirmDelete = (plan) => {
+const onPageChange = (event: any) => {
+    setFirst(event.first);
+    setRows(event.rows);
+};
+
+// Refetch plans when component mounts or refreshes
+useEffect(() => {
+    refetchPlan();
+}, []);
+
+useEffect(() => {
+if (selectedPlanData && !selectedPlanLoading && planDetails && !loadingPlanDetail && planProfilesData && !loadingPlanProfiles) {
+        const selectedParameters = planDetails?.getPlanDetailsById?.parameters ?? [];
+        
+      
+
+        const selectedProfiles = planProfilesData?.getPlanProfiles || [];
+
+        navigate(`/manage-plan`, {
+            state: {
+                planData: selectedPlanData.getPlansById,
+                selectedProfiles,
+                selectedParameters
+            }
+        });
+    }
+}, [selectedPlanData, selectedPlanLoading, planProfilesData, planDetails, loadingPlanDetail, navigate]);
+
+const handleEdit = (plan: IPlan) => { 
+    localStorage.setItem("planId", plan?.planId?.toString() ?? "");
+    
+    getPlansById({ variables: { planId: plan.planId } });
+    getPlanProfiles({ variables: { planId: plan.planId } });
+    getPlanDetailById({ variables: { planId: plan.planId } });
+};
+
+    const confirmDelete = (plan:any) => {
         setPlanToDelete(plan);
     };
 
@@ -74,7 +95,7 @@ const ViewPlans: FC = () => {
         setPlanToDelete(null);
     };
 
-    const ActionButtons = (rowData) => (
+    const ActionButtons = (rowData:any) => (
         <div className="flex items-center gap-2">
             <Button icon="pi pi-file-edit" aria-label="Edit" onClick={() => handleEdit(rowData)}
                     className="p-button-rounded p-button-info" />
