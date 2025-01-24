@@ -1,10 +1,56 @@
+export interface IAVP {
+    id: number;
+    avpName: string;
+    status: string;
+    overrideEnabled: number;
+    avpValue: string;
+    includeWhen: string;
+}
+
+export interface IProfile {
+    id: number;
+    profileId: number;
+    avpProfile: IAVP[];
+    profileKey: string; // Optional, if applicable
+}
 
 
+
+
+export interface IProfilenas{
+    profileId?: number | null | undefined;
+    attributeGroup?: number | null | undefined;
+    profileKey?: number | null | undefined;
+    description?: number | null | undefined;
+    groupname?: number | null | undefined;
+}
+
+// export interface IProfile {
+//     profileId?: number | null | undefined;
+//     profileKey?: number | null ;
+//     description?: string;
+//     attributeGroup?: number | null;
+// }
+
+
+export interface IPlanProfile {
+
+    profileId: number; 
+    attributeGroup?: number; 
+    profileKey?: string; 
+    description?: string; 
+    state?: string; 
+  }
+  
+  
 export interface IPlan {
     planId?: number | null | undefined;
     typeId?: number | null;
+    type?: string;
     planName?: string;
     description?: string;
+    planProfiles?: IPlanProfile[];
+    planParameters?: IPlanParameter[] | any;
 }
 
 export interface INas {
@@ -154,8 +200,31 @@ export interface IParameterMeta {
     id?: number
     parameter?: string
 }
-export interface IProfile {
-    id?: number
-    profile?: string
+// export interface IProfile {
+//     id?: number
+//     profile?: string
+// }
+
+export interface IProfileMapping {
+    profileId?: number;
+    status: String;
+}
+
+
+export interface IPlanMappingProfile{
+    planId: number;
+    profiles: IProfileMapping[]
+}
+
+export interface IParameterMapping{
+    parameterName?: String;
+    parameterValue?: String;
+    value: string;
+    parameter: string;
+}
+
+export interface IPlanMappingParameter{
+    planId: number;
+    parameters: IParameterMapping[]
 }
 

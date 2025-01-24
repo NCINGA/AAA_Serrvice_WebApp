@@ -49,3 +49,15 @@
     font-weight: bold;
 }
 
+.field-grid {
+    display: flex;
+    align-items: center;
+    gap: 1rem; 
+    margin-bottom: 1rem; 
+  }
+  
+  .field-label {
+    width: 12rem; 
+    font-weight: bold; 
+  }
+  
