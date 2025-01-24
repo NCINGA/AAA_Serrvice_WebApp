@@ -8,6 +8,48 @@ query GetTypes {
 `;
 
 
+export const GET_PLAN_DETAILS_BY_ID = gql`
+    query getPlanDetailsById($planId: Int!) {
+        getPlanDetailsById(planId: $planId) {
+            planId
+            profiles {
+                profileId
+                status
+            }
+            parameters {
+                parameterId
+                parameterName
+                parameterValue
+            }
+        }
+    }
+`;
+
+export const GET_PLAN_PROFILES = gql`
+    query GetPlanProfiles($planId: Int!) {
+        getPlanProfiles(planId: $planId) {
+            profileId
+            attributeGroup
+            profileKey
+            description
+            planId
+            status
+        }
+    }
+`;
+
+export const UPDATE_PLAN_PARAMETERS = gql`
+    mutation updatePlanParameters(
+
+        $planId: Int
+        $plan: PlanInput
+    ) {
+        updatePlanParameters(
+            planId: $planId
+            plan: $plan
+        )
+    }
+`;
 export const GET_SUBSCRIBERS = gql`
     query GetSubscribers($page: Int!, $size: Int!) {
         getSubscribersByPage(page: $page, size: $size) {
