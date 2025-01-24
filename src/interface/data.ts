@@ -7,6 +7,15 @@ export interface IPlan {
     description?: string;
 }
 
+export interface INas {
+    nas_id?: number | null | undefined;
+    nas_name?: string;
+    nas_type?: string;
+    nas_secret?: string;
+    coa_port?: number | null;
+    nas_attrgroup?: number | null;
+} 
+
 export interface IPlanAttribute {
     overrideId: number;
     attributeName?: string;
@@ -54,6 +63,13 @@ export interface ISubscriberAVP {
     operation?: OperationEnum;
     value?: string;
     status?: string;
+}
+
+export interface IPlanProfile {
+    id: number;
+    plan_id: number;
+    profile_id: number;
+    status: string;
 }
 
 export enum OperationEnum {
