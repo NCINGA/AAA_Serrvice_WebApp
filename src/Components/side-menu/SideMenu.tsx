@@ -49,25 +49,23 @@ const SideMenu: React.FC<SideMenuProps> = ({ onToggle }) => {
                 }
             ]
         },
-
         {
-            label: 'Profile Management',//Profile Management
-            icon: 'pi pi-fw pi-address-book',
+            label: "NAS Management",
+            icon: "pi pi-fw pi-server",
             items: [
                 {
-                    label: 'Add',
-                    icon: 'pi pi-fw pi-plus',
-                    command: () => navigate('/manage-profile?mode=new')
+                    label: "Add",
+                    icon: "pi pi-fw pi-plus",
+                    command: () => navigate("/manage-nas?mode=new"),
                 },
                 {
-                    label: 'View',
-                    icon: 'pi pi-fw pi-list',
-                    command: () => navigate('/view-profileManagement')
-                }
-            ]
+                    label: "View",
+                    icon: "pi pi-fw pi-list",
+                    command: () => navigate("/view-nas"),
+                },
+            ],
         }
     ];
-    //pi pi-fw pi-address-book
 
     const toggleMenu = () => {
         setExpanded(!expanded);

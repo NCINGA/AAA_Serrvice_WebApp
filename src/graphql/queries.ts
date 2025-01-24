@@ -1,6 +1,55 @@
 import {gql} from '@apollo/client';
 
+export const GET_TYPES = gql`
+query GetTypes {
+    getTypes
+}
 
+`;
+
+
+export const GET_PLAN_DETAILS_BY_ID = gql`
+    query getPlanDetailsById($planId: Int!) {
+        getPlanDetailsById(planId: $planId) {
+            planId
+            profiles {
+                profileId
+                status
+            }
+            parameters {
+                parameterId
+                parameterName
+                parameterValue
+            }
+        }
+    }
+`;
+
+export const GET_PLAN_PROFILES = gql`
+    query GetPlanProfiles($planId: Int!) {
+        getPlanProfiles(planId: $planId) {
+            profileId
+            attributeGroup
+            profileKey
+            description
+            planId
+            status
+        }
+    }
+`;
+
+export const UPDATE_PLAN_PARAMETERS = gql`
+    mutation updatePlanParameters(
+
+        $planId: Int
+        $plan: PlanInput
+    ) {
+        updatePlanParameters(
+            planId: $planId
+            plan: $plan
+        )
+    }
+`;
 export const GET_SUBSCRIBERS = gql`
     query GetSubscribers($page: Int!, $size: Int!) {
         getSubscribersByPage(page: $page, size: $size) {
@@ -142,11 +191,39 @@ export const CREATE_PLANS = gql`
     }
 `;
 
+export const CREATE_NAS = gql`
+    mutation CreateNAS(
+        $nas_name: String
+        $nas_type: String
+        $nas_secret: String
+        $coa_port: Int
+        $nas_attrgroup: Int
+    ) {
+        createNAS(
+            nas: {
+                nas_name: $nas_name
+                nas_type: $nas_type
+                nas_secret: $nas_secret
+                coa_port: $coa_port
+                nas_attrgroup: $nas_attrgroup
+            }           
+        )
+    }
+`;
+
+
 
 
 export const GET_PLANS = gql`
     query GetPlans {
         getPlans
+    }
+
+`;
+
+export const GET_NAS = gql`
+    query GetNas {
+        getNas
     }
 
 `;
@@ -503,8 +580,47 @@ export const GET_AVP_PROFILES = gql`
 `;
 
 
+export const UPDATE_NAS = gql`
+    mutation UpdateNas(
+        $nas_id: Int!, 
+        $nas_name: String! ,
+        $nas_type: String!,
+        $nas_secret: String!,
+        $coa_port: Int,
+        $nas_attrgroup: Int
+    ) {
+        updateNas(
+            nas_id: $nas_id,
+            nas: {
+                nas_name: $nas_name
+                nas_type: $nas_type
+                nas_secret: $nas_secret
+                coa_port: $coa_port
+                nas_attrgroup: $nas_attrgroup
+            }
+        )
+    }
+`;
 
+export const DELETE_NAS = gql`
+    mutation DeleteNas($nas_id: Int!) {
+        deleteNas(nas_id: $nas_id)
+    }
+`;
 
+export const GET_NAS_BY_ID = gql`
+    query GetNasById($nas_id: Int!) {
+        getNasById(nas_id: $nas_id) {          
+            nas_id
+            nas_name
+            nas_type
+            nas_secret
+	        coa_port
+	        nas_attrgroup
+        }
+    }
+
+`
 
 
 

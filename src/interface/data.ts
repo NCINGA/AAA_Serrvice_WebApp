@@ -32,12 +32,35 @@ export interface IProfilenas{
 //     attributeGroup?: number | null;
 // }
 
+
+export interface IPlanProfile {
+
+    profileId: number; 
+    attributeGroup?: number; 
+    profileKey?: string; 
+    description?: string; 
+    state?: string; 
+  }
+  
+  
 export interface IPlan {
     planId?: number | null | undefined;
     typeId?: number | null;
+    type?: string;
     planName?: string;
     description?: string;
+    planProfiles?: IPlanProfile[];
+    planParameters?: IPlanParameter[] | any;
 }
+
+export interface INas {
+    nas_id?: number | null | undefined;
+    nas_name?: string;
+    nas_type?: string;
+    nas_secret?: string;
+    coa_port?: number | null;
+    nas_attrgroup?: number | null;
+} 
 
 export interface IPlanAttribute {
     overrideId: number;
@@ -86,6 +109,13 @@ export interface ISubscriberAVP {
     operation?: OperationEnum;
     value?: string;
     status?: string;
+}
+
+export interface IPlanProfile {
+    id: number;
+    plan_id: number;
+    profile_id: number;
+    status: string;
 }
 
 export enum OperationEnum {
@@ -174,4 +204,27 @@ export interface IParameterMeta {
 //     id?: number
 //     profile?: string
 // }
+
+export interface IProfileMapping {
+    profileId?: number;
+    status: String;
+}
+
+
+export interface IPlanMappingProfile{
+    planId: number;
+    profiles: IProfileMapping[]
+}
+
+export interface IParameterMapping{
+    parameterName?: String;
+    parameterValue?: String;
+    value: string;
+    parameter: string;
+}
+
+export interface IPlanMappingParameter{
+    planId: number;
+    parameters: IParameterMapping[]
+}
 
