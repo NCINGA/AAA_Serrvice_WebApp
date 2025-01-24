@@ -126,6 +126,15 @@ const AvpAdd: FC<Props> = ({ profileId, onAdd, editingAvp, onEditComplete }) => 
                 });
                 onEditComplete?.(data.updateAvpProfile.profile); // Pass updated profile back
             } else {
+                if (!formData.avpName) {
+                    setErrorMsg("Please enter avp name.");
+                    toast.current?.show({
+                        severity: "error",
+                        summary: "Error",
+                        detail: "name is requred.",
+                    });
+                    return;
+                }
                 // Create new profile
                 const { data } = await createAvpProfile({
                     variables: { profileId, avpName, avpValue, overrideEnabled, status, includeWhen },
@@ -197,6 +206,7 @@ const AvpAdd: FC<Props> = ({ profileId, onAdd, editingAvp, onEditComplete }) => 
         setIsEditing(false); // Ensure we are in "Add" mode
         setVisible(true); // Show the dialog
     };
+
     const hideDialog = () => setVisible(false);
 
     return (
