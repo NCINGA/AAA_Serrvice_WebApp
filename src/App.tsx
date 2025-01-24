@@ -87,7 +87,6 @@ function App() {
                                                 <Route path="/manage-profile" element={<ManageProfile/>}/>
                                                 <Route path="/avp-add" element={<AvpAdd/>}/>
                                                 <Route path="/manage-profile" element={<ManageProfile/>}/>
-                                                <Route path="/avp-add" element={<AvpAdd/>}/>
                                                 <Route path="/view-plans" element={<ViewPlans/>}/>
                                                 <Route path="/view-subscribers" element={<ViewSubscribers/>}/>
                                                 <Route path="/view-nas" element={<ViewNAS/>}/>
