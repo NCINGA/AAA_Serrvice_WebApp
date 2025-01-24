@@ -580,20 +580,6 @@ export const GET_AVP_PROFILES = gql`
 `;
 
 
-
-
-
-
-
-
-
-
-export const GET_PROFILES = gql`
-    query GetProfiles {
-        getProfiles
-    }
-`;
-
 export const UPDATE_NAS = gql`
     mutation UpdateNas(
         $nas_id: Int!, 
