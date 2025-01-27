@@ -74,13 +74,6 @@ export const GET_SUBSCRIBERS = gql`
 `;
 
 
-
-export const GET_PROFILES = gql`
-    query GetProfiles {
-        getProfiles
-    }
-`;
-
 export const GET_PLAN_TYPES = gql`
     query GetPlanTypes {
         getPlanTypes {
