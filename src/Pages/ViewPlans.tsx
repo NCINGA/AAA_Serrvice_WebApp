@@ -41,7 +41,7 @@ const ViewPlans: FC = () => {
 
 const [getPlansById, { data: selectedPlanData, loading: selectedPlanLoading }] = useLazyQuery(GET_PLAN_BY_ID);
 
-const [getPlanProfiles, { data: planProfilesData, loading: loadingPlanProfiles }] = useLazyQuery(GET_PLAN_PROFILES);
+const [getPlanProfiles, { data: planProfilesData }] = useLazyQuery(GET_PLAN_PROFILES);
 
 const [getPlanDetailById, { data: planDetails, loading: loadingPlanDetail }] = useLazyQuery(GET_PLAN_DETAILS_BY_ID);
 
@@ -58,8 +58,8 @@ useEffect(() => {
 useEffect(() => {
 if (selectedPlanData && !selectedPlanLoading && planDetails && !loadingPlanDetail) {
         const selectedParameters = planDetails?.getPlanDetailsById?.parameters ?? [];
-        
-      
+
+
 
         const selectedProfiles = planProfilesData?.getPlanProfiles || [];
 
@@ -73,9 +73,9 @@ if (selectedPlanData && !selectedPlanLoading && planDetails && !loadingPlanDetai
     }
 }, [selectedPlanData, selectedPlanLoading, planProfilesData, planDetails, loadingPlanDetail, navigate]);
 
-const handleEdit = (plan: IPlan) => { 
+const handleEdit = (plan: IPlan) => {
     localStorage.setItem("planId", plan?.planId?.toString() ?? "");
-    
+
     getPlansById({ variables: { planId: plan.planId } });
     getPlanProfiles({ variables: { planId: plan.planId } });
     getPlanDetailById({ variables: { planId: plan.planId } });

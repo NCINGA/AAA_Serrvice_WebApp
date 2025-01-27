@@ -424,8 +424,8 @@ const ManageSubscriber: FC = () => {
 
   const profileMetaOption = profileMeta?.getProfileMeta?.map(
     (profile: IProfile) => ({
-      label: profile.profile,
-      value: profile.profile,
+      label: profile?.profile,
+      value: profile?.profile,
     })
   );
 

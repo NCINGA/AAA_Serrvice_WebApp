@@ -9,8 +9,10 @@ export interface IAVP {
 
 export interface IProfile {
     id: number;
+    profile: string;
     profileId: number;
     avpProfile: IAVP[];
+    description: string;
     profileKey: string; // Optional, if applicable
 }
 
@@ -35,14 +37,14 @@ export interface IProfilenas{
 
 export interface IPlanProfile {
 
-    profileId: number; 
-    attributeGroup?: number; 
-    profileKey?: string; 
-    description?: string; 
-    state?: string; 
+    profileId: number;
+    attributeGroup?: number;
+    profileKey?: string;
+    description?: string;
+    state?: string;
   }
-  
-  
+
+
 export interface IPlan {
     planId?: number | null | undefined;
     typeId?: number | null;
@@ -60,7 +62,7 @@ export interface INas {
     nas_secret?: string;
     coa_port?: number | null;
     nas_attrgroup?: number | null;
-} 
+}
 
 export interface IPlanAttribute {
     overrideId: number;

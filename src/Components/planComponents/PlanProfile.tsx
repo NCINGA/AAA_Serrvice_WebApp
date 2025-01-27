@@ -1,16 +1,16 @@
-import { useState, useEffect, Dispatch, SetStateAction } from "react";
-import { useQuery } from "@apollo/client";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-import { Dropdown } from "primereact/dropdown";
-import { InputText } from "primereact/inputtext";
-import { GET_PROFILES, GET_STATE } from "../../graphql/queries";
-import { IPlanProfile } from "../../interface/data";
+import {useEffect, useState} from "react";
+import {useQuery} from "@apollo/client";
+import {DataTable} from "primereact/datatable";
+import {Column} from "primereact/column";
+import {Dropdown} from "primereact/dropdown";
+import {InputText} from "primereact/inputtext";
+import {GET_PROFILES, GET_STATE} from "../../graphql/queries";
+import {IProfile} from "../../interface/data";
 
 interface PlanProfileProps {
-  setSelectedProfiles: Dispatch<SetStateAction<any[]>>;
+  setSelectedProfiles: any;
   selectedProfiles?: any[];
-  onSelectedProfiles:(profiles: IPlanProfile[]) => void;
+  onSelectedProfiles: (profiles: any) => void;
   fetchProfilesStatus: any;
 
 }
@@ -24,7 +24,7 @@ const PlanProfile = ({
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const [combinedData, setCombinedData] = useState([]);
+  const [combinedData, setCombinedData] = useState<any[]>([]);
 
   const {
     loading: profilesLoading,
@@ -45,49 +45,47 @@ const PlanProfile = ({
   useEffect(() => {
     if (profilesData && stateData) {
       const profiles = profilesData.getProfiles || [];
-      
 
-      
 
       // Combine profile data with state data based on profileId
       const mergedData = profiles.map((profile:any) => {
         console.log("Profile", profile)
-        
+
         const matchingState = fetchProfilesStatus?.planProfiles?.find(
           (p:any) => p.profileId === profile.profileId
         );
 
         console.log("matchingState", matchingState)
-     
+
         return {
           ...profile,
           state: matchingState ? matchingState.state || matchingState.status: "N/A",
         };
-         
+
       });
 
       setCombinedData(mergedData);
 
       console.log("Profile Data", "fetchProfilesStatus>>",fetchProfilesStatus?.planProfiles, "mergedData>>",mergedData)
 
-   
+
     }
   }, [profilesData, fetchProfilesStatus, stateData]);
 
-  const onPageChange = (event:any) => {
+  const onPageChange = (event: any) => {
     setFirst(event.first);
     setRows(event.rows);
-    refetchProfiles({ page: event.first / event.rows, size: event.rows });
+    refetchProfiles({page: event.first / event.rows, size: event.rows});
   };
 
   const handleSearch = (e:any) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
 
-    const filtered = combinedData.filter(
-      (profile) =>
-        profile.profileKey.toLowerCase().includes(term) ||
-        profile.description.toLowerCase().includes(term)
+    const filtered = combinedData?.filter(
+        (profile: IProfile) =>
+            profile?.profileKey.toLowerCase().includes(term) ||
+            profile?.description.toLowerCase().includes(term)
     );
     setCombinedData(filtered);
   };
@@ -96,17 +94,17 @@ const PlanProfile = ({
     const newState = e.value;
 
     // Update the state in combinedData and selectedProfiles
-    const updatedData = combinedData.map((profile) =>
-      profile.profileId === rowData.profileId
-        ? { ...profile, state: newState }
-        : profile
+    const updatedData = combinedData.map((profile: IProfile) =>
+        profile.profileId === rowData.profileId
+            ? {...profile, state: newState}
+            : profile
     );
     setCombinedData(updatedData);
 
     const updatedSelectedProfiles = selectedProfiles?.map((profile) =>
-      profile.profileId === rowData.profileId
-        ? { ...profile, state: newState }
-        : profile
+        profile.profileId === rowData.profileId
+            ? {...profile, state: newState}
+            : profile
     );
     setSelectedProfiles(updatedSelectedProfiles);
     onSelectedProfiles(updatedSelectedProfiles);
@@ -144,7 +142,7 @@ const PlanProfile = ({
         rows={rows}
         totalRecords={profilesData?.getProfiles?.length || 0}
         rowsPerPageOptions={[5, 10, 20]}
-        onPageChange={onPageChange}
+        onPage={onPageChange}
         tableStyle={{ minWidth: "50rem" }}
       >
         <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
