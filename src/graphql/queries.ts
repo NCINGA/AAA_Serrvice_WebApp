@@ -42,7 +42,7 @@ export const UPDATE_PLAN_PARAMETERS = gql`
     mutation updatePlanParameters(
 
         $planId: Int
-        $plan: PlanInput
+        $plan: PlanInput2
     ) {
         updatePlanParameters(
             planId: $planId

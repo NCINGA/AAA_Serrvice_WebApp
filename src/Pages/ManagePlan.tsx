@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { ProgressSpinner } from "primereact/progressspinner";
-import { Stepper, StepperChangeEvent, StepperRefAttributes } from "primereact/stepper";
+import { Stepper, StepperChangeEvent } from "primereact/stepper";
 import { StepperPanel } from "primereact/stepperpanel";
 import { Toast } from "primereact/toast";
 import { ConfirmDialog } from "primereact/confirmdialog";
@@ -22,16 +22,11 @@ import PlanProfile from "../Components/planComponents/PlanProfile";
 import { IPlanProfile, IParameterMapping, IPlan } from "../interface/data";
 import ParameterDetails from "../Components/planComponents/PlanParameters";
 
-
-
-
 const ManagePlan = () => {
   // Refs for components
-  const toast = useRef<Toast | null>(null);
+  const toast = useRef(null);
   const messages = useRef(null);
-  const stepperRef = useRef<StepperRefAttributes | null>(null);
-  
-
+  const stepperRef = useRef<Stepper | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const [activeIndex, setActiveIndex] = useState<number>(0);
@@ -60,7 +55,7 @@ const ManagePlan = () => {
   useEffect(() => {}, [formData]);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [activeStep, setActiveStep] = useState<boolean>(false);
+  const [activeStep, setActiveStep] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
   const [step, setStep] = useState(1);
   const [planId, setPlanId] = useState<number | null>(null);
@@ -90,9 +85,18 @@ const ManagePlan = () => {
     },
   });
 
-  const [createPlanProfile] = useMutation(UPDATE_PLAN_PARAMETERS);
+  const [createPlanProfile, { data, loading, error }] = useMutation(
+    UPDATE_PLAN_PARAMETERS
+  );
 
-  const [createPlanParameter] = useMutation(UPDATE_PLAN_PARAMETERS);
+  const [
+    createPlanParameter,
+    {
+      data: updatePlanParameterData,
+      loading: updateParameterLoading,
+      error: updateParameterError,
+    },
+  ] = useMutation(UPDATE_PLAN_PARAMETERS);
 
   const [updatePlan, { loading: updating }] = useMutation(UPDATE_PLANS, {
     onCompleted: () => {},
@@ -118,8 +122,6 @@ const ManagePlan = () => {
       console.log("Existing FormData:", updatedFormData);
 
       setPlanId(planData.planId);
-      console.log(planId);
-      
       setIsEditing(true);
     }
   }, [planData]);
@@ -136,15 +138,15 @@ const ManagePlan = () => {
   const handleStepper = (event: StepperChangeEvent) => {
     console.log("event 001");
     if (event.index === 1) {
-      // const planId = localStorage.getItem("planId") ?? "";
+      const planId = localStorage.getItem("planId") ?? "";
 
-      // const profileMapping: IPlan = {
-      //   planId: Number.parseInt(planId),
-      //   planProfiles: selectedProfiles.map((profile: any) => ({
-      //     profileId: profile.profileId,
-      //     status: profile.state,
-      //   })),
-      // };
+      const profileMapping: IPlan = {
+        planId: Number.parseInt(planId),
+        planProfiles: selectedProfiles.map((profile: any) => ({
+          profileId: profile.profileId,
+          status: profile.state,
+        })),
+      };
     }
   };
 
@@ -154,20 +156,19 @@ const ManagePlan = () => {
     if (step === 1) {
       const variables = {
         typeId: formData.type,
-        planName: formData.planName ? formData.planName.trim() : "",
-        description: formData.description ? formData.description.trim() : "",
+        planName: formData.planName.trim(),
+        description: formData.description.trim(),
       };
 
       if (!variables.typeId) {
         setErrorMsg("Please select a type.");
-        toast.current?.show({
-            severity: "error",
-            summary: "Error",
-            detail: "Type is required.",
+        toast.current.show({
+          severity: "error",
+          summary: "Error",
+          detail: "Type is required.",
         });
         return;
-    }
-    
+      }
 
       try {
         if (isEditing) {
@@ -188,7 +189,7 @@ const ManagePlan = () => {
           localStorage.setItem("planId", createdPlanId);
         }
 
-        toast.current?.show({
+        toast.current.show({
           severity: "success",
           summary: "Success",
           detail: isEditing
@@ -197,30 +198,21 @@ const ManagePlan = () => {
         });
 
         setStep(2);
-
       } catch (error) {
         console.error("Error creating/updating plan:", error);
-      
-        if (error instanceof Error) {
-          setErrorMsg(error.message);
-          toast.current?.show({
-            severity: "error",
-            summary: "Error",
-            detail: error.message,
-          });
-        } else {
-          setErrorMsg("An unknown error occurred.");
-        }
-      
-        
+        setErrorMsg(error.message);
+        toast.current.show({
+          severity: "error",
+          summary: "Error",
+          detail: error.message,
+        });
       }
-      
     } else if (step === 2) {
       const storedPlanId = formData.planId;
 
       if (!storedPlanId) {
         setErrorMsg("Plan ID not found. Please complete the first step.");
-        toast.current?.show({
+        toast.current.show({
           severity: "error",
           summary: "Error",
           detail: "Plan ID is missing.",
@@ -248,7 +240,7 @@ const ManagePlan = () => {
           await createPlanProfile({ variables: data });
         }
 
-        toast.current?.show({
+        toast.current.show({
           severity: "success",
           summary: "Success",
           detail:
@@ -257,22 +249,12 @@ const ManagePlan = () => {
         setStep(3);
       } catch (error) {
         console.error("Error creating/updating plan profile:", error);
-      
-        if (error instanceof Error) {
-          toast.current?.show({
-            severity: "error",
-            summary: "Error",
-            detail: error.message,
-          });
-        } else {
-          toast.current?.show({
-            severity: "error",
-            summary: "Error",
-            detail: "An unknown error occurred.",
-          });
-        }
+        toast.current.show({
+          severity: "error",
+          summary: "Error",
+          detail: error.message,
+        });
       }
-      
     } else if (step === 3) {
       const storedPlanId = formData.planId;
 
@@ -300,14 +282,14 @@ const ManagePlan = () => {
 
       try {
         if (isEditing) {
-          console.log("Data", data);
-
+          console.log("Data",data);
+          
           await createPlanParameter({ variables: data });
         } else {
           await createPlanParameter({ variables: data });
         }
 
-        toast.current?.show({
+        toast.current.show({
           severity: "success",
           summary: "Success",
           detail: "Plan parameters created/updated successfully!",
@@ -318,34 +300,20 @@ const ManagePlan = () => {
         }, 1000);
       } catch (error) {
         console.error("Error creating/updating plan parameters:", error);
-      
-        if (error instanceof Error) {
-          
-          setErrorMsg(errorMsg);
-          toast.current?.show({
-            severity: "error",
-            summary: "Error",
-            detail: error.message,
-          });
-        } else {
-          
-          setErrorMsg("An unknown error occurred.");
-          toast.current?.show({
-            severity: "error",
-            summary: "Error",
-            detail: "An unknown error occurred.",
-          });
-        }
+        setErrorMsg(error.message);
+        toast.current.show({
+          severity: "error",
+          summary: "Error",
+          detail: error.message,
+        });
       }
-      
     }
   };
 
   const handleNext = () => {
     if (stepperRef.current) {
       const nextIndex = activeIndex + 1;
-      if (nextIndex <= 2) {
-        // Assuming 3 steps (0, 1, 2)
+      if (nextIndex <= 2) { // Assuming 3 steps (0, 1, 2)
         setActiveIndex(nextIndex);
         stepperRef.current.nextCallback();
       }
@@ -355,13 +323,11 @@ const ManagePlan = () => {
   // Check if plan types are still loading or there was an error fetching
   if (planTypesLoading) return <ProgressSpinner />;
   if (planTypesError) {
-    if (toast.current) {
-      toast.current.show({
-        severity: "error",
-        summary: "Error",
-        detail: "Error fetching plan types.",
-      });
-    }
+    toast.current.show({
+      severity: "error",
+      summary: "Error",
+      detail: "Error fetching plan types.",
+    });
     return null;
   }
 
@@ -395,14 +361,14 @@ const ManagePlan = () => {
         >
           <div style={{ width: "80%" }}>
             <Messages ref={messages} />
-            <Stepper
-              ref={stepperRef}
-              // activeIndex={activeIndex}
-              onChangeStep={(e) => {
-                setActiveIndex(e.index);
-                handleStepper(e);
-              }}
-            >
+            <Stepper 
+  ref={stepperRef} 
+  activeIndex={activeIndex}
+  onChangeStep={(e) => {
+    setActiveIndex(e.index);
+    handleStepper(e);
+  }}
+>
               <StepperPanel header="Basic Details">
                 <div style={{ marginTop: "20px" }}>
                   <div className="p-field mb-4">
@@ -411,7 +377,7 @@ const ManagePlan = () => {
                       id="type"
                       name="type"
                       value={formData.type}
-                      options={planTypes.map((type: any) => ({
+                      options={planTypes.map((type) => ({
                         label: type.typeName,
                         value: type.typeId,
                       }))}
@@ -459,6 +425,7 @@ const ManagePlan = () => {
               </StepperPanel>
 
               <StepperPanel header="Profile Details">
+               
                 <PlanProfile
                   fetchProfilesStatus={formData}
                   onSelectedProfiles={assignedProfiles}
@@ -533,23 +500,21 @@ const ManagePlan = () => {
                   onClick={() => {
                     setActiveStep(true);
                     if (stepperRef.current?.getActiveStep() === 0) {
-                      console.log(activeStep);
-                      
                       navigate("/view-plans", { replace: true });
                     } else {
-                      stepperRef.current?.prevCallback();
+                      stepperRef.current.prevCallback();
                     }
                   }}
                 />
-
-                <Button
+                {activeStep < 1 && (
+                  <Button
                   label="Next"
                   icon="pi pi-arrow-right"
                   severity="secondary"
                   iconPos="right"
                   onClick={handleNext}
                 />
-
+                )}
                 <Button
                   label={
                     step === 1

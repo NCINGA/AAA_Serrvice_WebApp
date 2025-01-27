@@ -15,12 +15,6 @@ interface PlanProfileProps {
 
 }
 
-interface Profile {
-  profileId: number;
-  profileKey: string;
-  description: string;
-}
-
 const PlanProfile = ({
   selectedProfiles,
   setSelectedProfiles,
@@ -30,7 +24,7 @@ const PlanProfile = ({
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const [combinedData, setCombinedData] = useState<Profile[]>([]);
+  const [combinedData, setCombinedData] = useState([]);
 
   const {
     loading: profilesLoading,
@@ -109,19 +103,13 @@ const PlanProfile = ({
     );
     setCombinedData(updatedData);
 
-    let updatedSelectedProfiles: any[] = [];
-
-if (selectedProfiles) {
-  updatedSelectedProfiles = selectedProfiles.map((profile) =>
-    profile.profileId === rowData.profileId
-      ? { ...profile, state: newState }
-      : profile
-  );
-}
-
-setSelectedProfiles(updatedSelectedProfiles);
-onSelectedProfiles(updatedSelectedProfiles);
-
+    const updatedSelectedProfiles = selectedProfiles?.map((profile) =>
+      profile.profileId === rowData.profileId
+        ? { ...profile, state: newState }
+        : profile
+    );
+    setSelectedProfiles(updatedSelectedProfiles);
+    onSelectedProfiles(updatedSelectedProfiles);
   };
 
   if (profilesError || stateError) {
@@ -156,7 +144,7 @@ onSelectedProfiles(updatedSelectedProfiles);
         rows={rows}
         totalRecords={profilesData?.getProfiles?.length || 0}
         rowsPerPageOptions={[5, 10, 20]}
-        onChange={onPageChange}
+        onPageChange={onPageChange}
         tableStyle={{ minWidth: "50rem" }}
       >
         <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />

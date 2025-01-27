@@ -56,7 +56,7 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-if (selectedPlanData && !selectedPlanLoading && planDetails && !loadingPlanDetail && planProfilesData && !loadingPlanProfiles) {
+if (selectedPlanData && !selectedPlanLoading && planDetails && !loadingPlanDetail) {
         const selectedParameters = planDetails?.getPlanDetailsById?.parameters ?? [];
         
       
