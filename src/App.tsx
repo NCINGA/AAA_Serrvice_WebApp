@@ -90,6 +90,11 @@ function App() {
                                                 <Route path="/manage-nas" element={<ManageNAS />} />
                                                 <Route path="*" element={<Navigate to="/view-subscribers" replace/>}/>
                                                 <Route path="*" element={<Navigate to="/view-plans" replace/>}/>
+                                              {/*Bimsara*/}
+                                              <Route path="*" element={<Navigate to="/view-profileManagement" replace/>}/>
+                                              <Route path="/manage-profile" element={<ManageProfile/>}/>
+                                              <Route path="/avp-add" element={<AvpAdd/>}/>
+                                              <Route path="/view-profileManagement" element={<ViewProfileManagement/>}/>
                                             </Routes>
                                         </div>
                                     </div>

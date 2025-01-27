@@ -64,6 +64,22 @@ const SideMenu: React.FC<SideMenuProps> = ({ onToggle }) => {
                     command: () => navigate("/view-nas"),
                 },
             ],
+        },
+        {
+            label: 'Profile Management',//Profile Management
+            icon: 'pi pi-fw pi-address-book',
+            items: [
+                {
+                    label: 'Add',
+                    icon: 'pi pi-fw pi-plus',
+                    command: () => navigate('/manage-profile?mode=new')
+                },
+                {
+                    label: 'View',
+                    icon: 'pi pi-fw pi-list',
+                    command: () => navigate('/view-profileManagement')
+                }
+            ]
         }
     ];
 
