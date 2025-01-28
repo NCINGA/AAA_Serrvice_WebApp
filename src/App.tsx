@@ -30,7 +30,7 @@ const isAuthenticated = async (): Promise<boolean> => {
   }
 
   try {
-    const response = await axios.get("http://localhost:8080/auth/isExpired", {
+    const response = await axios.get("/service/auth/isExpired", {
       params: { token },
     });
     return !response.data;
