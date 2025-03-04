@@ -70,7 +70,12 @@ const ManageNAS = () => {
       }, 1000);
     },
     onError: (error) => {
-      console.error("Error creating NAS:", error);
+      
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Failed to create NAS! NAS name already exists.",
+      });
       setErrorMsg(error.message);
     },
   });
@@ -113,7 +118,7 @@ const ManageNAS = () => {
     const { name, value } = e.target;
     if (name === "nasPort") {
       const numericValue = value.replace(/\D/g, "");
-      if (numericValue.length > 4) return; // Prevent more than 4 digits
+      if (numericValue.length > 4) return; 
       setFormData({ ...formData, [name]: numericValue });
     } else {
       setFormData({ ...formData, [name]: value });
@@ -186,7 +191,7 @@ const ManageNAS = () => {
             left: 0,
             right: 0,
           }}
-          className={"absolute"}
+          // className={"absolute"}
         >
           <div style={{ width: "80%" }}>
             <Messages ref={messages} />

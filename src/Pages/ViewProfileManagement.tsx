@@ -168,7 +168,7 @@ const ViewManageProfile = () => {
 
 
         <div style={{ padding: '20px', width: '100%' }}>
-            <h2 style={{ textAlign: 'left', marginBottom: '20px', marginTop: '200' }}>Manage Profiles</h2>
+            {/* <h2 style={{ textAlign: 'left', marginBottom: '20px', marginTop: '200' }}>Manage Profiles</h2> */}
             <div className="data-table-container">
                 <Messages
                     ref={toast}
@@ -181,6 +181,7 @@ const ViewManageProfile = () => {
                         width: "50vw",
                     }}
                 />
+                
                 <DataTable
                     value={paginatedProfiles}
                     tableStyle={{ width: '100%' }}

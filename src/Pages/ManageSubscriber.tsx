@@ -63,6 +63,7 @@ import { Toast } from "primereact/toast";
 import AppHeader from "../Components/header/AppHeader";
 
 const ManageSubscriber: FC = () => {
+  const [formErrors, setFormErrors] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useRef<any>(null);
@@ -680,29 +681,126 @@ const ManageSubscriber: FC = () => {
     }
   };
 
-  const handlingSubscriberSave = useCallback(() => {
-    if (mode === "edit") {
-      updateSubscriber({
-        variables: { subscriberId: subscriberId, subscriber: formData },
-      })
-        .then((response) => {
-          console.log("Subscriber update successfully:", response);
-        })
-        .catch((err) => {
-          console.error("Error creating subscriber:", err);
-        });
-    } else {
-      createSubscriber({
-        variables: formData,
-      })
-        .then((response) => {
-          console.log("Subscriber created successfully:", response);
-        })
-        .catch((err) => {
-          console.error("Error creating subscriber:", err);
-        });
+  const validateForm = (formData: any) => {
+    const errors: Record<string, string> = {};
+    
+    const requiredFields = [
+      { key: "username", label: "Username" },
+      { key: "password", label: "Password" },
+      { key: "status", label: "Status" },
+      { key: "email", label: "Email" },
+      { key: "contactNo", label: "Phone" },
+    ];
+  
+    
+    requiredFields.forEach(({ key, label }) => {
+      console.log(`Checking ${key}:`, {
+        value: formData[key],
+        type: typeof formData[key],
+        isEmpty: typeof formData[key] === "string" && formData[key].trim() === ""
+      });
+  
+      
+      const value = formData[key];
+      const isEmpty = 
+        value === undefined || 
+        value === null || 
+        (typeof value === "string" && value.trim().length === 0);
+  
+      if (isEmpty) {
+        errors[key] = `${label} is required`;
+      }
+    });
+  
+    
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.email && !emailPattern.test(formData.email)) {
+      errors.email = "Invalid email format";
     }
-  }, [formData, createSubscriber, updateSubscriber]);
+  
+    
+    const phonePattern = /^\+?[\d\s-()]{10,}$/;
+    if (formData.contactNo && !phonePattern.test(formData.contactNo)) {
+      errors.phone = "Invalid phone number format";
+    }
+  
+    
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors,
+    };
+  };
+
+const handlingSubscriberSave = useCallback(() => {
+  const { isValid, errors } = validateForm(formData);
+
+  if (!isValid) {
+    setFormErrors(errors);
+
+    
+    Object.keys(errors).forEach((key) => {
+      toast.current.show({
+        severity: "error",
+        summary: "Validation Error",
+        detail: errors[key], 
+        life: 3000
+      });
+    });
+
+    return;
+  }
+
+  console.log(formErrors);
+  
+  setFormErrors({});
+
+  if (mode === "edit") {
+    updateSubscriber({
+      variables: { subscriberId: subscriberId, subscriber: formData },
+    })
+      .then((response) => {
+        console.log("Subscriber updated successfully:", response);
+        toast.current.show({
+          severity: "success",
+          summary: "Success",
+          detail: "Subscriber updated successfully",
+          life: 3000
+        });
+      })
+      .catch((err) => {
+        console.error("Error updating subscriber:", err);
+        toast.current.show({
+          severity: "error",
+          summary: "Error",
+          detail: err.message || "Error updating subscriber",
+          life: 3000
+        });
+      });
+  } else {
+    createSubscriber({
+      variables: formData,
+    })
+      // .then((response) => {
+      //   // console.log("Subscriber created successfully:", response);
+      //   // toast.current.show({
+      //   //   severity: "success",
+      //   //   summary: "Success",
+      //   //   detail: "Subscriber created successfully",
+      //   //   life: 3000
+      //   // });
+      // })
+      .catch((err) => {
+        console.error("Error creating subscriber:", err);
+        toast.current.show({
+          severity: "error",
+          summary: "Error",
+          detail: err.message || "Error creating subscriber",
+          life: 3000
+        });
+      });
+  }
+}, [formData, createSubscriber, updateSubscriber, mode, subscriberId, toast]);
+
 
   useEffect(() => {
     if (createSubscriberError?.graphQLErrors?.[0]?.message !== undefined) {
@@ -793,30 +891,39 @@ const ManageSubscriber: FC = () => {
   }, []);
 
   const handleUpdateSubscriber = useCallback(() => {
+    if (subscriberId === 0) {
+        toast.current?.show({
+            severity: "warn",
+            summary: "Missing Details",
+            detail: "Please fill in the basic details before updating.",
+        });
+        return;
+    }
+
     const updatedFormData = {
-      ...formData,
-      planAttributeOverrides: localAttributes,
-      planParameterOverrides: localParameters,
-      subscriberAVPs: localSubscriberAVP,
-      nasWhitelist: localNasWhitelist,
-      pofileOverrideSubscriberAVPs: localProfileSubscriberOverrideAvps,
-      deviceWhitelist: localDeviceWhitelist,
-      subscriberAttributes: localSubscriberAttribute,
-      subscriberParameters: localSubscriberParameter,
+        ...formData,
+        planAttributeOverrides: localAttributes,
+        planParameterOverrides: localParameters,
+        subscriberAVPs: localSubscriberAVP,
+        nasWhitelist: localNasWhitelist,
+        pofileOverrideSubscriberAVPs: localProfileSubscriberOverrideAvps,
+        deviceWhitelist: localDeviceWhitelist,
+        subscriberAttributes: localSubscriberAttribute,
+        subscriberParameters: localSubscriberParameter,
     };
 
     updateSubscriberParameters({
-      variables: {
-        subscriberId: subscriberId,
-        planId: formData.planId,
-        subscriber: updatedFormData,
-      },
+        variables: {
+            subscriberId: subscriberId,
+            planId: formData.planId,
+            subscriber: updatedFormData,
+        },
     })
-      .then(() => {})
-      .catch((err) => {
-        console.error("Error updating subscriber:", err);
-      });
-  }, [
+        .then(() => {})
+        .catch((err) => {
+            console.error("Error updating subscriber:", err);
+        });
+}, [
     updateSubscriberParameters,
     formData,
     localAttributes,
@@ -826,7 +933,9 @@ const ManageSubscriber: FC = () => {
     localProfileSubscriberOverrideAvps,
     localDeviceWhitelist,
     subscriberId,
-  ]);
+]);
+
+
 
   const handleTabChange = useCallback(async (e: any) => {
     setActiveIndex(e.index);
@@ -1304,7 +1413,7 @@ const ManageSubscriber: FC = () => {
             left: 0,
             right: 0,
           }}
-          className={"absolute"}
+          // className={"absolute"}
         >
           <div style={{ width: "80%" }}>
             <Messages ref={msgs} />
@@ -1487,7 +1596,7 @@ const ManageSubscriber: FC = () => {
                           <DataTable
                             value={localParameters ?? []}
                             scrollable
-                            scrollHeight="300px"
+                            scrollHeight="flex"
                           >
                             <Column
                               field="parameterName"
@@ -1510,7 +1619,7 @@ const ManageSubscriber: FC = () => {
                           <DataTable
                             value={localAttributes ?? []}
                             scrollable
-                            scrollHeight="300px"
+                            scrollHeight="flex"
                           >
                             <Column
                               field="attributeName"
@@ -1554,7 +1663,7 @@ const ManageSubscriber: FC = () => {
                           <DataTable
                             value={localSubscriberAttribute ?? []}
                             scrollable
-                            scrollHeight="300px"
+                            scrollHeight="flex"
                           >
                             <Column
                               field="attributeName"
@@ -1587,7 +1696,7 @@ const ManageSubscriber: FC = () => {
                           <DataTable
                             value={localSubscriberParameter ?? []}
                             scrollable
-                            scrollHeight="300px"
+                            scrollHeight="flex"
                           >
                             <Column
                               field="parameterName"

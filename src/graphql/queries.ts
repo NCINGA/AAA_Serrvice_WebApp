@@ -8,6 +8,24 @@ query GetTypes {
 `;
 
 
+export const GET_PLANS_BY_PAGE = gql`
+  query GetPlansByPage($page: Int!, $size: Int!) {
+    getPlansByPage(page: $page, size: $size) {
+      content {
+        planId
+        typeId
+        planName
+        description
+      }
+      page
+      size
+      totalElements
+    }
+  }
+`;
+
+
+
 export const GET_PLAN_DETAILS_BY_ID = gql`
     query getPlanDetailsById($planId: Int!) {
         getPlanDetailsById(planId: $planId) {

@@ -1,20 +1,19 @@
-import  { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import { Toast } from "primereact/toast";
 import { useLazyQuery, useMutation } from "@apollo/client";
-import {CREATE_PROFILE, GET_NAS_ATTRIBUTE_GROUP, UPDATE_PROFILE} from "../graphql/queries";
+import { CREATE_PROFILE, GET_NAS_ATTRIBUTE_GROUP, UPDATE_PROFILE } from "../graphql/queries";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from 'react-router-dom';
 
-
 const ManageProfile = () => {
-    const toast = useRef<Toast>(null); // Correct way to initialize
+    const toast = useRef<Toast>(null);
 
     const navigate = useNavigate();
-    const location = useLocation()
+    const location = useLocation();
 
     const [formData, setFormData] = useState({
         profileKey: "",
@@ -27,13 +26,15 @@ const ManageProfile = () => {
     const [creating, setCreating] = useState(false);
     const profileData = location.state?.profileData;
     const [isEditing, setIsEditing] = useState(false);
+    const [isFormChanged, setIsFormChanged] = useState(false);
+    const [originalFormData, setOriginalFormData] = useState({});
 
-    console.log(errorMsg)
+    console.log(errorMsg);
 
     const [getNasGroup] = useLazyQuery(GET_NAS_ATTRIBUTE_GROUP, {
         onCompleted: (data) => {
             const dropdownOptions =
-                data?.getNasAttributeGroup?.map((type :any) => ({
+                data?.getNasAttributeGroup?.map((type: any) => ({
                     label: type.name,
                     value: type.id,
                 })) || [];
@@ -86,18 +87,33 @@ const ManageProfile = () => {
 
     useEffect(() => {
         if (profileData) {
-            setFormData({
+            const initialData = {
                 attributeGroup: profileData.attributeGroup,
                 profileKey: profileData.profileKey,
                 description: profileData.description,
-            });
+            };
+            setFormData(initialData);
+            setOriginalFormData(initialData);
             setIsEditing(true);
+            setIsFormChanged(false);
         }
     }, [profileData]);
 
     useEffect(() => {
         getNasGroup();
     }, [getNasGroup]);
+
+    // Check if the form data has changed from the original data
+    useEffect(() => {
+        if (isEditing) {
+            const hasChanged = 
+                formData.profileKey !== originalFormData.profileKey ||
+                formData.description !== originalFormData.description ||
+                formData.attributeGroup !== originalFormData.attributeGroup;
+            
+            setIsFormChanged(hasChanged);
+        }
+    }, [formData, originalFormData, isEditing]);
 
     const handleInputChange = (e: { target: { name: any; value: any; }; }) => {
         const { name, value } = e.target;
@@ -254,7 +270,7 @@ const ManageProfile = () => {
                         severity="secondary"
                         icon="pi pi-save"
                         onClick={handleSubmit}
-                        disabled={creating || updating}
+                        disabled={(isEditing && !isFormChanged) || creating || updating}
                     />
                 </div>
             </div>

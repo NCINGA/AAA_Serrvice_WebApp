@@ -49,7 +49,7 @@ const PlanProfile = ({
 
       // Combine profile data with state data based on profileId
       const mergedData = profiles.map((profile:any) => {
-        console.log("Profile", profile)
+        console.log("Profile", profile);
 
         const matchingState = fetchProfilesStatus?.planProfiles?.find(
           (p:any) => p.profileId === profile.profileId
@@ -65,10 +65,6 @@ const PlanProfile = ({
       });
 
       setCombinedData(mergedData);
-
-      console.log("Profile Data", "fetchProfilesStatus>>",fetchProfilesStatus?.planProfiles, "mergedData>>",mergedData)
-
-
     }
   }, [profilesData, fetchProfilesStatus, stateData]);
 
@@ -120,7 +116,7 @@ const PlanProfile = ({
 
   return (
     <div className="card">
-      <div className="flex align-items-center justify-content-between mb-3">
+      {/* <div className="flex align-items-center justify-content-between mb-3">
         <span className="p-input-icon-left" style={{ width: "300px" }}>
           <InputText
             value={searchTerm}
@@ -129,7 +125,7 @@ const PlanProfile = ({
             style={{ width: "100%" }}
           />
         </span>
-      </div>
+      </div> */}
 
       <DataTable
         value={combinedData}
@@ -144,6 +140,7 @@ const PlanProfile = ({
         rowsPerPageOptions={[5, 10, 20]}
         onPage={onPageChange}
         tableStyle={{ minWidth: "50rem" }}
+        scrollHeight="100%"
       >
         <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
         <Column field="profileKey" header="Profile Key" />

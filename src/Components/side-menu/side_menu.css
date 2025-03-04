@@ -9,6 +9,8 @@
     transition: width 0.3s;
     height: 100%;
     z-index: 100; /* Ensure it stays above the main content */
+    left: 0; /* Explicitly set left position */
+    top: 0; /* Align to top */
 }
 
 .toggle-button {
@@ -23,6 +25,7 @@
     transition: width 0.3s;
     height: 100%;
     background: #ffffff;
+    overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
 .menu-container.expanded {
@@ -87,12 +90,72 @@
     display: block !important;
 }
 
-/* Main content adjustment */
+/* Main content adjustment - THIS IS KEY TO FIX THE HIDING ISSUE */
 .main-content {
     margin-left: 60px; /* Default margin when menu is collapsed */
     transition: margin-left 0.3s ease; /* Smooth transition */
+    padding-top: 65px; /* Match the top margin of the side menu */
 }
 
 .main-content.shifted {
     margin-left: 300px; /* Adjust margin when menu is expanded */
+}
+
+/* Media queries for responsive behavior */
+@media screen and (max-width: 768px) {
+    .menu-container.expanded {
+        width: 80vw; /* Limit width on small screens to 80% of viewport width */
+        max-width: 300px; /* But never exceed original width */
+        overflow-y: auto; /* Add vertical scrolling if needed */
+    }
+    
+    .submenu {
+        max-width: calc(100vw - 70px); /* Ensure submenu doesn't overflow viewport */
+        width: auto;
+    }
+    
+    /* On mobile, overlay the menu instead of pushing content */
+    .side-menu {
+        z-index: 1000; /* Higher z-index to ensure it's above content */
+    }
+    
+    .main-content, .main-content.shifted {
+        margin-left: 60px; /* Always use collapsed margin on small screens */
+        width: calc(100% - 60px); /* Ensure content width is appropriate */
+    }
+}
+
+/* Extra small devices */
+@media screen and (max-width: 480px) {
+    .menu-container.expanded {
+        width: 85vw; /* Use more of the screen on very small devices */
+    }
+    
+    /* Make the collapsed state even smaller on tiny screens */
+    .menu-container.collapsed {
+        width: 50px;
+    }
+    
+    .collapsed-item i {
+        font-size: 18px; /* Slightly smaller icons on very small screens */
+    }
+    
+    .main-content, .main-content.shifted {
+        margin-left: 50px; /* Match the collapsed menu width */
+        width: calc(100% - 50px);
+    }
+
+    .side-menu {
+        position: fixed;
+        height: 100vh;
+        z-index: 1000;
+      }
+      
+      .menu-container.expanded {
+        width: 250px; /* Match this with main-expanded margin-left */
+      }
+      
+      .menu-container.collapsed {
+        width: 60px; /* Match this with main-collapsed margin-left */
+      }
 }

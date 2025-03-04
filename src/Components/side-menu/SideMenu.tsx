@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {PanelMenu} from 'primereact/panelmenu';
 import {Button} from 'primereact/button';
 import 'primereact/resources/themes/saga-blue/theme.css';
@@ -10,11 +10,11 @@ import {useNavigate} from 'react-router-dom';
 
 interface SideMenuProps {
     onToggle: (isExpanded: boolean) => void;
+    isExpanded: boolean; 
 }
 
-const SideMenu: React.FC<SideMenuProps> = ({ onToggle }) => {
+const SideMenu: React.FC<SideMenuProps> = ({ onToggle, isExpanded }) => {
     const navigate = useNavigate();
-    const [expanded, setExpanded] = useState(false);
 
     const items = [
         {
@@ -66,7 +66,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ onToggle }) => {
             ],
         },
         {
-            label: 'Profile Management',//Profile Management
+            label: 'Profile Management',
             icon: 'pi pi-fw pi-address-book',
             items: [
                 {
@@ -84,8 +84,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ onToggle }) => {
     ];
 
     const toggleMenu = () => {
-        setExpanded(!expanded);
-        onToggle(!expanded);
+        onToggle(!isExpanded);
     };
 
     const renderCollapsedMenu = (items: any[], isSubItem = false) => {
@@ -95,7 +94,6 @@ const SideMenu: React.FC<SideMenuProps> = ({ onToggle }) => {
                 {isSubItem && <span className="menu-label">{item.label}</span>}
                 {item.items && (
                     <div className="submenu">
-                        {/*{renderCollapsedMenu(item.items, true)}*/}
                         <Menubar model={item.items} className="custom-menubar" />
                     </div>
                 )}
@@ -103,13 +101,11 @@ const SideMenu: React.FC<SideMenuProps> = ({ onToggle }) => {
         ));
     };
 
-
-
     return (
         <div className="side-menu" style={{zIndex: 99999}}>
             <Button onClick={toggleMenu} className="toggle-button" icon="pi pi-bars"/>
-            <div className={`menu-container ${expanded ? 'expanded' : 'collapsed'}`}>
-                {expanded ? (
+            <div className={`menu-container ${isExpanded ? 'expanded' : 'collapsed'}`}>
+                {isExpanded ? (
                     <PanelMenu model={items} style={{width: '100%'}}/>
                 ) : (
                     <div className="collapsed-icons">
