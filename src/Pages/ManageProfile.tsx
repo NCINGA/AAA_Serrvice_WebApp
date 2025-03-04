@@ -9,13 +9,19 @@ import { CREATE_PROFILE, GET_NAS_ATTRIBUTE_GROUP, UPDATE_PROFILE } from "../grap
 import { useNavigate } from "react-router-dom";
 import { useLocation } from 'react-router-dom';
 
+interface ProfileData {
+    profileKey: string;
+    description: string;
+    attributeGroup: string | null;
+}
+
 const ManageProfile = () => {
     const toast = useRef<Toast>(null);
 
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<ProfileData>({
         profileKey: "",
         description: "",
         attributeGroup: null,
@@ -27,7 +33,11 @@ const ManageProfile = () => {
     const profileData = location.state?.profileData;
     const [isEditing, setIsEditing] = useState(false);
     const [isFormChanged, setIsFormChanged] = useState(false);
-    const [originalFormData, setOriginalFormData] = useState({});
+    const [originalFormData, setOriginalFormData] = useState<ProfileData>({
+        profileKey: "",
+        description: "",
+        attributeGroup: null,
+    });
 
     console.log(errorMsg);
 

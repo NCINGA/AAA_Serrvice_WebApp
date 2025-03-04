@@ -3,7 +3,6 @@ import {useQuery} from "@apollo/client";
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
 import {Dropdown} from "primereact/dropdown";
-import {InputText} from "primereact/inputtext";
 import {GET_PROFILES, GET_STATE} from "../../graphql/queries";
 import {IProfile} from "../../interface/data";
 
@@ -23,7 +22,7 @@ const PlanProfile = ({
 }: PlanProfileProps) => {
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(10);
-  const [searchTerm, setSearchTerm] = useState("");
+  // const [searchTerm, setSearchTerm] = useState("");
   const [combinedData, setCombinedData] = useState<any[]>([]);
 
   const {
@@ -74,17 +73,17 @@ const PlanProfile = ({
     refetchProfiles({page: event.first / event.rows, size: event.rows});
   };
 
-  const handleSearch = (e:any) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
+  // const handleSearch = (e:any) => {
+  //   const term = e.target.value.toLowerCase();
+  //   setSearchTerm(term);
 
-    const filtered = combinedData?.filter(
-        (profile: IProfile) =>
-            profile?.profileKey.toLowerCase().includes(term) ||
-            profile?.description.toLowerCase().includes(term)
-    );
-    setCombinedData(filtered);
-  };
+  //   const filtered = combinedData?.filter(
+  //       (profile: IProfile) =>
+  //           profile?.profileKey.toLowerCase().includes(term) ||
+  //           profile?.description.toLowerCase().includes(term)
+  //   );
+  //   setCombinedData(filtered);
+  // };
 
   const handleStateChange = (e:any, rowData:any) => {
     const newState = e.value;
