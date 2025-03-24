@@ -70,7 +70,6 @@ const ManageNAS = () => {
       }, 1000);
     },
     onError: (error) => {
-      
       toast.current?.show({
         severity: "error",
         summary: "Error",
@@ -118,7 +117,7 @@ const ManageNAS = () => {
     const { name, value } = e.target;
     if (name === "nasPort") {
       const numericValue = value.replace(/\D/g, "");
-      if (numericValue.length > 4) return; 
+      if (numericValue.length > 4) return;
       setFormData({ ...formData, [name]: numericValue });
     } else {
       setFormData({ ...formData, [name]: value });
@@ -182,7 +181,7 @@ const ManageNAS = () => {
 
         <div
           style={{
-            marginTop: 150,
+            marginTop: 100,
             top: 0,
             bottom: 0,
             display: "flex",
@@ -216,7 +215,7 @@ const ManageNAS = () => {
                   value={formData.nasName}
                   style={{ width: "100%" }}
                   onChange={handleInputChange}
-                  placeholder="Enter NAS name"
+                  placeholder="Enter NAS Name"
                   className="w-full"
                 />
               </div>
@@ -275,7 +274,7 @@ const ManageNAS = () => {
                     value={formData.attributeGroup}
                     options={attributeGroups}
                     onChange={handleDropdownChange}
-                    placeholder="Select attribute group"
+                    placeholder="Select Attribute Group"
                     className="w-full"
                   />
                 )}
@@ -293,74 +292,68 @@ const ManageNAS = () => {
             </div>
 
             {/* Footer */}
-            <div
-              className="flex pt-4"
-              style={{
-                bottom: 0,
-                left: 0,
-                right: 0,
-                position: "fixed",
-                width: "100%",
-                height: 80,
-                backdropFilter: "blur(10px)",
-                background:
-                  "linear-gradient(139deg, rgba(255,255,255,1) 12%, rgba(175,223,255,0.1) 90%)",
-                zIndex: 9999,
-                display: "flex",
-                alignItems: "center",
-                borderTop: "solid 1px #8dd1ff",
-                justifyContent: "space-between",
+          </div>
+        </div>
+        <div
+          className="flex"
+          style={{
+            width: "100%",
+            height: 80,
+            backdropFilter: "blur(10px)",
+            background:
+              "linear-gradient(139deg, rgba(255,255,255,1) 12%, rgba(175,223,255,0.1) 90%)",
+            //zIndex: 9999,
+            display: "flex",
+            //alignItems: "center",
+            borderTop: "solid 1px #8dd1ff",
+            justifyContent: "flex-start",
+          }}
+        >
+          {/* Left Section */}
+          <div
+            style={{
+              width: "100%",
+              gap: "10px",
+              display: "flex",
+              alignItems: "center",
+              paddingLeft: "80px",
+              justifyContent: "start",
+              paddingBottom: "20px",
+            }}
+          >
+            <p style={{ fontSize: 12, color: "gray", fontFamily: "ubuntu" }}>
+              3A Web console | Copyright 2025
+            </p>
+          </div>
+
+          {/* Right Section with Buttons */}
+          <div
+            style={{
+              alignItems: "center",
+              width: "100%",
+              gap: "10px",
+              display: "flex",
+              paddingRight: "80px",
+              paddingBottom: "20px",
+              justifyContent: "end",
+            }}
+          >
+            <Button
+              label="Back"
+              severity="secondary"
+              icon="pi pi-arrow-left"
+              onClick={() => {
+                navigate("/view-nas", { replace: true });
               }}
-            >
-              {/* Left Section */}
-              <div
-                style={{
-                  width: "100%",
-                  gap: "10px",
-                  display: "flex",
-                  alignItems: "center",
-                  paddingLeft: "80px",
-                  justifyContent: "start",
-                  paddingBottom: "20px",
-                }}
-              >
-                <p
-                  style={{ fontSize: 12, color: "gray", fontFamily: "ubuntu" }}
-                >
-                  3A Web console | Copyright 2024
-                </p>
-              </div>
+            />
 
-              {/* Right Section with Buttons */}
-              <div
-                style={{
-                  alignItems: "center",
-                  width: "100%",
-                  gap: "10px",
-                  display: "flex",
-                  paddingRight: "80px",
-                  paddingBottom: "20px",
-                  justifyContent: "end",
-                }}
-              >
-                <Button
-                  label="Back"
-                  severity="secondary"
-                  icon="pi pi-arrow-left"
-                  onClick={() => {
-                    navigate("/view-nas", { replace: true });
-                  }}
-                />
-
-                <Button
-                  label={isEditing ? "Update NAS" : "Save"}
-                  severity="secondary"
-                  icon="pi pi-save"
-                  onClick={handleSubmit}
-                  disabled={creating || updating}
-                />
-              </div>
-            </div>
+            <Button
+              label={isEditing ? "Update NAS" : "Save"}
+              severity="secondary"
+              icon="pi pi-save"
+              onClick={handleSubmit}
+              disabled={creating || updating}
+            />
           </div>
         </div>
       </div>

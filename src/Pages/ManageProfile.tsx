@@ -85,7 +85,7 @@ const ManageProfile = () => {
             toast.current?.show({
                 severity: "success",
                 summary: "Success",
-                detail: "Plan updated successfully!",
+                detail: "Profile updated successfully!",
             });
             navigate("/view-profileManagement");
         },
@@ -189,13 +189,13 @@ const ManageProfile = () => {
                 <Toast ref={toast} />
                 <div className="p-fluid p-formgrid p-grid">
                     <div className="p-field p-col-12 p-md-6">
-                        <label htmlFor="profileKey">Plan Name</label>
+                        <label htmlFor="profileKey">Profile Name</label>
                         <InputText
                             id="profileKey"
                             name="profileKey"
                             value={formData.profileKey}
                             onChange={handleInputChange}
-                            placeholder="Enter Plan Name"
+                            placeholder="Enter Profile Name"
                         />
                     </div>
 
@@ -259,7 +259,7 @@ const ManageProfile = () => {
                     }}
                 >
                     <p style={{ fontSize: 12, color: "gray", fontFamily: "ubuntu" }}>
-                        3A Web console | Copyright 2024
+                        3A Web console | Copyright 2025
                     </p>
                 </div>
 

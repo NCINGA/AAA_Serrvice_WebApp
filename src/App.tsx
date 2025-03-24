@@ -22,6 +22,7 @@ import ViewProfileManagement from "./Pages/ViewProfileManagement.tsx";
 import AvpAdd from "./Pages/AvpAdd.tsx";
 import ViewNAS from "./Pages/ViewNAS";
 import ManageNAS from "./Pages/ManageNAS";
+import SubscriberDetails from "./Pages/SubscriberDetails"; 
 import axios from "axios";
 
 const isAuthenticated = async (): Promise<boolean> => {
@@ -41,7 +42,7 @@ const isAuthenticated = async (): Promise<boolean> => {
   }
 };
 
-// Routes that don't need redirection
+
 const validRoutes = [
   "/view-plans",
   "/view-subscribers",
@@ -51,7 +52,8 @@ const validRoutes = [
   "/manage-nas",
   "/manage-profile",
   "/avp-add",
-  "/view-profileManagement"
+  "/view-profileManagement",
+  "/subscriber-details"
 ];
 
 function App() {
@@ -155,6 +157,11 @@ function App() {
                           path="/view-profileManagement"
                           element={<ViewProfileManagement />}
                         />
+                        {/* New route for subscriber details */}
+                        <Route
+                          path="/subscriber-details/:subscriberId"
+                          element={<SubscriberDetails />}
+                        />
                         <Route
                           path="/"
                           element={<Navigate to="/view-subscribers" replace />}
@@ -190,10 +197,12 @@ function AuthenticatedRedirect() {
   const location = useLocation();
   const currentPath = location.pathname;
   
+  // Check if the current path starts with any of the valid routes
+  // This handles paths with parameters like /subscriber-details/123
+  const isValidRoute = validRoutes.some(route => 
+    currentPath === route || currentPath.startsWith(`${route}/`)
+  );
   
-  const isValidRoute = validRoutes.includes(currentPath);
-  
- 
   return isValidRoute ? null : <Navigate to="/view-subscribers" replace />;
 }
 

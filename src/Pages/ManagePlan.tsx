@@ -23,8 +23,18 @@ import {
 } from "../graphql/queries";
 import { useMutation, useQuery } from "@apollo/client";
 import PlanProfile from "../Components/planComponents/PlanProfile";
-import { IPlanProfile, IParameterMapping, IPlan } from "../interface/data";
+import {
+  IPlanProfile,
+  IParameterMapping,
+  IPlan,
+  IAttributeMapping,
+  IPlanParameterAction,
+  IPlanParameterPhase,
+} from "../interface/data";
 import ParameterDetails from "../Components/planComponents/PlanParameters";
+import AttributeDetails from "../Components/planComponents/PlanAttributes";
+import ParameterActionDetails from "../Components/planComponents/ParameterActions";
+import ParameterPhaseDetails from "../Components/planComponents/ParameterPhases";
 
 const ManagePlan = () => {
   // Refs for components
@@ -39,7 +49,18 @@ const ManagePlan = () => {
     planData,
     selectedProfiles: initialProfiles,
     selectedParameters: initialParameters,
+    selectedAttributes: initialAttributes,
+    selectedParameterActions: initialParameterActions,
+    selectedParameterPhases: initialParameterPhases,
   } = location.state || {};
+
+  const [selectedParameterActions, setSelectedParameterActions] = useState<
+    IPlanParameterAction[]
+  >(initialParameterActions || []);
+
+  const [selectedParameterPhases, setSelectedParameterPhases] = useState<
+    IPlanParameterPhase[]
+  >(initialParameterPhases || []);
 
   const [selectedProfiles, setSelectedProfiles] = useState(
     initialProfiles || []
@@ -47,6 +68,9 @@ const ManagePlan = () => {
   const [selectedParameters, setSelectedParameters] = useState<
     IParameterMapping[]
   >(initialParameters || []);
+  const [selectedAttributes, setSelectedAttributes] = useState<
+    IAttributeMapping[]
+  >(initialAttributes || []);
 
   // State for form fields
   const [formData, setFormData] = useState<IPlan>({
@@ -56,18 +80,15 @@ const ManagePlan = () => {
     description: "",
     planProfiles: [],
     planParameters: [],
+    planAttributes: [],
+    parameterActions: [],
   });
-
-  useEffect(() => {}, [formData]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [activeStep, setActiveStep] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [step, setStep] = useState(1);
   const [planId, setPlanId] = useState<number | null>(null);
-  
-
-  // const planData = location.state?.
 
   // GraphQL Queries
   const {
@@ -88,15 +109,17 @@ const ManagePlan = () => {
     },
     onError: (error) => {
       console.log(errorMsg);
-      
+
       console.error("Error creating plan:", error);
       setErrorMsg(error.message);
     },
   });
 
   const [createPlanProfile] = useMutation(UPDATE_PLAN_PARAMETERS);
-
   const [createPlanParameter] = useMutation(UPDATE_PLAN_PARAMETERS);
+  const [createPlanAttribute] = useMutation(UPDATE_PLAN_PARAMETERS);
+  const [createPlanParameterAction] = useMutation(UPDATE_PLAN_PARAMETERS);
+  const [createPlanParameterPhase] = useMutation(UPDATE_PLAN_PARAMETERS);
 
   const [updatePlan, { loading: updating }] = useMutation(UPDATE_PLANS, {
     onCompleted: () => {},
@@ -107,9 +130,9 @@ const ManagePlan = () => {
   });
 
   // Load plan data into the form if editing
+
+  // In ManagePlan.tsx:
   useEffect(() => {
-    console.log(planId);
-    
     if (planData) {
       const updatedFormData = {
         planId: planData.planId,
@@ -118,16 +141,16 @@ const ManagePlan = () => {
         description: planData.description,
         planProfiles: selectedProfiles,
         planParameters: selectedParameters,
+        planAttributes: selectedAttributes,
+        planParameterActions: selectedParameterActions,
+        planParameterPhases: selectedParameterPhases,
       };
 
       setFormData(updatedFormData);
-
       setPlanId(planData.planId);
-
       setIsEditing(true);
     }
   }, [planData]);
-
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -138,7 +161,6 @@ const ManagePlan = () => {
   };
 
   const handleStepper = (event: StepperChangeEvent) => {
-   
     if (event.index === 1) {
       // const planId = localStorage.getItem("planId") ?? "";
       // const profileMapping: IPlan = {
@@ -203,13 +225,25 @@ const ManagePlan = () => {
       });
     }
   };
+
   const handleSaveProfile = async () => {
+    console.log(planId);
+
     const storedPlanId = formData.planId;
     if (!storedPlanId) {
       toast.current?.show({
         severity: "error",
         summary: "Error",
         detail: "Plan ID is missing.",
+      });
+      return;
+    }
+
+    if (!formData.planProfiles || formData.planProfiles.length === 0) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Please select at least one profile.",
       });
       return;
     }
@@ -247,6 +281,7 @@ const ManagePlan = () => {
       });
     }
   };
+
   const handleSaveParameters = async () => {
     const storedPlanId = formData.planId;
     if (!storedPlanId) {
@@ -254,6 +289,33 @@ const ManagePlan = () => {
         severity: "error",
         summary: "Error",
         detail: "Plan ID is missing.",
+      });
+      return;
+    }
+
+    if (!selectedParameters || selectedParameters.length === 0) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Please add at least one parameter.",
+      });
+      return;
+    }
+
+    // Check for null values in parameters
+    const hasNullValues = selectedParameters.some(
+      (param) =>
+        !param.parameter ||
+        param.value === null ||
+        param.value === undefined ||
+        param.value === ""
+    );
+
+    if (hasNullValues) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Parameters cannot contain empty values.",
       });
       return;
     }
@@ -280,11 +342,243 @@ const ManagePlan = () => {
         detail: "Parameters updated successfully!",
       });
 
+      setStep(4);
+    } catch (error) {
+      console.error("Error updating parameters:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail:
+          error instanceof Error ? error.message : "An unknown error occurred.",
+      });
+    }
+  };
+
+  const handleSaveAttributes = async () => {
+    const storedPlanId = formData.planId;
+    if (!storedPlanId) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Plan ID is missing.",
+      });
+      return;
+    }
+
+    // Validation check for attributes
+    if (!selectedAttributes || selectedAttributes.length === 0) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Please add at least one attribute.",
+      });
+      return;
+    }
+
+    // Check for null values in attributes
+    const hasNullValues = selectedAttributes.some(
+      (attr) =>
+        !attr.attribute ||
+        attr.value === null ||
+        attr.value === undefined ||
+        attr.value === ""
+    );
+
+    if (hasNullValues) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Attributes cannot contain empty values.",
+      });
+      return;
+    }
+
+    try {
+      const planAttribute = {
+        planId: storedPlanId,
+        attributes: selectedAttributes.map((attribute) => ({
+          attributeName: attribute.attribute,
+          attributeValue: attribute.value,
+        })),
+      };
+
+      const data = {
+        planId: storedPlanId,
+        plan: { planAttribute: [planAttribute] },
+      };
+
+      await createPlanAttribute({ variables: data });
+
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Attributes updated successfully!",
+      });
+    } catch (error) {
+      console.error("Error updating attributes:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail:
+          error instanceof Error ? error.message : "An unknown error occurred.",
+      });
+    }
+  };
+
+  const handleSaveParameterActions = async () => {
+    const storedPlanId = formData.planId;
+    if (!storedPlanId) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Plan ID is missing.",
+      });
+      return;
+    }
+
+    // Validation check for parameter actions
+    if (!selectedParameterActions || selectedParameterActions.length === 0) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Please add at least one parameter action.",
+      });
+      return;
+    }
+
+    // Check for null values in parameter actions
+    const hasNullValues = selectedParameterActions.some(
+      (action) =>
+        !action.actionId ||
+        !action.parameterName ||
+        !action.actionPhase ||
+        !action.entity ||
+        action.actionSequence === null ||
+        action.actionSequence === undefined
+    );
+
+    if (hasNullValues) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Parameter actions cannot contain empty values.",
+      });
+      return;
+    }
+
+    try {
+      const variables = {
+        planId: storedPlanId,
+        plan: {
+          planParameterAction: [
+            {
+              planId: storedPlanId,
+              parameterActions: selectedParameterActions.map((action) => ({
+                actionId: action.actionId,
+                actionPhase: action.actionPhase,
+                parameterName: action.parameterName,
+                actionSequence: action.actionSequence,
+                matchReturn: Number(action.matchReturn) || 0,
+                entity: action.entity,
+              })),
+            },
+          ],
+        },
+      };
+
+      await createPlanParameterAction({ variables });
+
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Parameter actions updated successfully!",
+      });
+
+      // Navigate to view plans after saving the last step
       setTimeout(() => {
         navigate("/view-plans");
       }, 1000);
     } catch (error) {
-      console.error("Error updating parameters:", error);
+      console.error("Error updating parameter actions:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail:
+          error instanceof Error ? error.message : "An unknown error occurred.",
+      });
+    }
+  };
+
+  const handleSaveParameterPhases = async () => {
+    const storedPlanId = formData.planId;
+    if (!storedPlanId) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Plan ID is missing.",
+      });
+      return;
+    }
+
+    // Validation check for parameter phases
+    if (!selectedParameterPhases || selectedParameterPhases.length === 0) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Please add at least one parameter phase.",
+      });
+      return;
+    }
+
+    // Check for null values in parameter phases
+    const hasNullValues = selectedParameterPhases.some(
+      (phase) =>
+        !phase.parameterName ||
+        !phase.phase ||
+        !phase.status ||
+        !phase.entityState ||
+        !phase.entity
+    );
+
+    if (hasNullValues) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Validation Error",
+        detail: "Parameter phases cannot contain empty values.",
+      });
+      return;
+    }
+
+    try {
+      const variables = {
+        planId: storedPlanId,
+        plan: {
+          planParameterPhase: [
+            {
+              planId: storedPlanId,
+              parameterPhases: selectedParameterPhases.map((phase) => ({
+                parameterName: phase.parameterName,
+                phase: phase.phase,
+                status: phase.status,
+                entityState: phase.entityState,
+                entity: phase.entity,
+              })),
+            },
+          ],
+        },
+      };
+
+      await createPlanParameterPhase({ variables });
+
+      toast.current?.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Parameter phases updated successfully!",
+      });
+
+      setStep(5);
+    } catch (error) {
+      console.error("Error updating parameter phases:", error);
       toast.current?.show({
         severity: "error",
         summary: "Error",
@@ -297,8 +591,7 @@ const ManagePlan = () => {
   const handleNext = () => {
     if (stepperRef.current) {
       const nextIndex = activeIndex + 1;
-      if (nextIndex <= 2) {
-        // Assuming 3 steps (0, 1, 2)
+      if (nextIndex <= 5) {
         setActiveIndex(nextIndex);
         stepperRef.current.nextCallback();
       }
@@ -343,21 +636,16 @@ const ManagePlan = () => {
             height: "100%",
             left: 0,
             right: 0,
-            
           }}
-          // className={"absolute"}
         >
           <div style={{ width: "80%" }}>
             <Messages ref={messages} />
             <Stepper
               ref={stepperRef}
-              // activeIndex={activeIndex}
               onChangeStep={(e) => {
                 setActiveIndex(e.index);
                 handleStepper(e);
-                
               }}
-              
             >
               <StepperPanel header="Basic Details">
                 <div style={{ marginTop: "20px" }}>
@@ -429,102 +717,126 @@ const ManagePlan = () => {
                   setSelectedParameters={setSelectedParameters}
                 />
               </StepperPanel>
+
+              <StepperPanel header="Attribute Details">
+                <AttributeDetails
+                  selectedAttributes={selectedAttributes}
+                  setSelectedAttributes={setSelectedAttributes}
+                />
+              </StepperPanel>
+              <StepperPanel header="Parameter Phases">
+                <ParameterPhaseDetails
+                  selectedParameterPhases={selectedParameterPhases}
+                  setSelectedParameterPhases={setSelectedParameterPhases}
+                />
+              </StepperPanel>
+              <StepperPanel header="Parameter Actions">
+                <ParameterActionDetails
+                  selectedParameterActions={selectedParameterActions}
+                  setSelectedParameterActions={setSelectedParameterActions}
+                />
+              </StepperPanel>
             </Stepper>
+          </div>
+        </div>
 
-            {/* Buttons */}
-            <div
-              className="flex pt-4 "
-              style={{
-                bottom: 0,
-                left: 0,
-                right: 0,
-                position: "fixed",
-                width: "100%",
-                height: 80,
-                backdropFilter: "blur(10px)",
-                background:
-                  "linear-gradient(139deg, rgba(255,255,255,1) 12%, rgba(175,223,255,0.1) 90%)",
-                zIndex: 9999,
-                display: "flex",
-                alignItems: "center",
-                borderTop: "solid 1px #8dd1ff",
-                justifyContent: "space-between",
+        <div
+          className="flex pt-4 "
+          style={{
+            marginTop: "20px",
+            width: "100%",
+            height: 80,
+            backdropFilter: "blur(10px)",
+            background:
+              "linear-gradient(139deg, rgba(255,255,255,1) 12%, rgba(175,223,255,0.1) 90%)",
+            display: "flex",
+            borderTop: "solid 1px #8dd1ff",
+            justifyContent: "flex-start",
+          }}
+        >
+          {/* Left Section */}
+          <div
+            style={{
+              width: "100%",
+              gap: "10px",
+              display: "flex",
+              alignItems: "center",
+              paddingLeft: "80px",
+              justifyContent: "start",
+              paddingBottom: "20px",
+            }}
+          >
+            <p style={{ fontSize: 12, color: "gray", fontFamily: "ubuntu" }}>
+              3A Web console | Copyright 2025
+            </p>
+          </div>
+
+          {/* Right Section with Buttons */}
+          <div
+            style={{
+              alignItems: "center",
+              width: "100%",
+              gap: "10px",
+              display: "flex",
+              paddingRight: "80px",
+              paddingBottom: "20px",
+              justifyContent: "end",
+            }}
+          >
+            <Button
+              label="Back"
+              severity="secondary"
+              icon="pi pi-arrow-left"
+              onClick={() => {
+                setActiveStep(true);
+                if (stepperRef.current?.getActiveStep() === 0) {
+                  console.log(activeStep);
+                  navigate("/view-plans", { replace: true });
+                } else {
+                  stepperRef.current?.prevCallback();
+                }
               }}
-            >
-              {/* Left Section */}
-              <div
-                style={{
-                  width: "100%",
-                  gap: "10px",
-                  display: "flex",
-                  alignItems: "center",
-                  paddingLeft: "80px",
-                  justifyContent: "start",
-                  paddingBottom: "20px",
-                }}
-              >
-                <p
-                  style={{ fontSize: 12, color: "gray", fontFamily: "ubuntu" }}
-                >
-                  3A Web console | Copyright 2024
-                </p>
-              </div>
+            />
 
-              {/* Right Section with Buttons */}
-              <div
-                style={{
-                  alignItems: "center",
-                  width: "100%",
-                  gap: "10px",
-                  display: "flex",
-                  paddingRight: "80px",
-                  paddingBottom: "20px",
-                  justifyContent: "end",
-                }}
-              >
-                <Button
-                  label="Back"
-                  severity="secondary"
-                  icon="pi pi-arrow-left"
-                  onClick={() => {
-                    setActiveStep(true);
-                    if (stepperRef.current?.getActiveStep() === 0) {
-                      console.log(activeStep);
+            <Button
+              label="Next"
+              icon="pi pi-arrow-right"
+              severity="secondary"
+              iconPos="right"
+              onClick={handleNext}
+            />
 
-                      navigate("/view-plans", { replace: true });
-                    } else {
-                      stepperRef.current?.prevCallback();
-                    }
-                  }}
-                />
+            <Button
+              label={
+                step === 1
+                  ? "Save "
+                  : step === 2
+                  ? "Save "
+                  : step === 3
+                  ? "Save "
+                  : "Save "
+              }
+              severity="secondary"
+              icon="pi pi-save"
+              onClick={() => {
+                const currentStep = stepperRef.current?.getActiveStep();
 
-                <Button
-                  label="Next"
-                  icon="pi pi-arrow-right"
-                  severity="secondary"
-                  iconPos="right"
-                  onClick={handleNext}
-                />
-
-                <Button
-                  label={step === 1 ? "Save " : step === 2 ? "Save " : "Save "}
-                  severity="secondary"
-                  icon="pi pi-save"
-                  onClick={() => {
-                    const currentStep = stepperRef.current?.getActiveStep();
-
-                    if (currentStep === 0) {
-                      handleSaveBasicDetails();
-                    } else if (currentStep === 1) {
-                      handleSaveProfile();
-                    } else if (currentStep === 2) {
-                      handleSaveParameters();
-                    }
-                  }}
-                  disabled={creating || updating}
-                />
-              </div>
-            </div>
+                if (currentStep === 0) {
+                  handleSaveBasicDetails();
+                } else if (currentStep === 1) {
+                  handleSaveProfile();
+                } else if (currentStep === 2) {
+                  handleSaveParameters();
+                } else if (currentStep === 3) {
+                  handleSaveAttributes();
+                } else if (currentStep === 4) {
+                  handleSaveParameterPhases();
+                } else if (currentStep === 5) {
+                  handleSaveParameterActions();
+                }
+              }}
+              disabled={creating || updating}
+            />
           </div>
         </div>
       </div>

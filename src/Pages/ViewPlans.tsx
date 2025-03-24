@@ -17,6 +17,32 @@ import AppHeader from "../Components/header/AppHeader";
 import { Messages } from "primereact/messages";
 import { ConfirmDialog } from "primereact/confirmdialog";
 
+// Define interfaces for the data structure
+interface IAttribute {
+  id: string | null;
+  attributeName: string;
+  attributeValue: string;
+}
+
+interface IParameterAction {
+  id: string | null;
+  actionId: string;
+  actionPhase: string;
+  parameterName: string;
+  actionSequence: number;
+  matchReturn: string;
+  entity: string;
+}
+
+interface IParameterPhase {
+  id: string | null;
+  parameterName: string;
+  phase: string;
+  status: string;
+  entityState: string;
+  entity: string;
+}
+
 const ViewPlans: FC = () => {
   const navigate = useNavigate();
   const [first, setFirst] = useState(0);
@@ -29,7 +55,6 @@ const ViewPlans: FC = () => {
   const page = Math.floor(first / rows) + 1;
   const size = rows;
 
-  // Use the paginated query instead of GET_PLANS
   const { loading, error, data, refetch } = useQuery(GET_PLANS_BY_PAGE, {
     variables: { page, size },
     notifyOnNetworkStatusChange: true,
@@ -64,10 +89,27 @@ const ViewPlans: FC = () => {
     getPlansById,
     { data: selectedPlanData, loading: selectedPlanLoading },
   ] = useLazyQuery(GET_PLAN_BY_ID);
+
   const [getPlanProfiles, { data: planProfilesData }] =
     useLazyQuery(GET_PLAN_PROFILES);
+
   const [getPlanDetailById, { data: planDetails, loading: loadingPlanDetail }] =
     useLazyQuery(GET_PLAN_DETAILS_BY_ID);
+
+  const [
+    getPlanAttributesById,
+    { data: planAttributesData, loading: loadingPlanAttributes },
+  ] = useLazyQuery(GET_PLAN_DETAILS_BY_ID);
+
+  const [
+    getPlanParameterActionsById,
+    { data: planParameterActionsData, loading: loadingPlanParameterActions },
+  ] = useLazyQuery(GET_PLAN_DETAILS_BY_ID);
+
+  const [
+    getPlanParameterPhasesById,
+    { data: planParameterPhasesData, loading: loadingPlanParameterPhases },
+  ] = useLazyQuery(GET_PLAN_DETAILS_BY_ID);
 
   const onPageChange = (event: any) => {
     setFirst(event.first);
@@ -79,22 +121,74 @@ const ViewPlans: FC = () => {
     refetch({ page, size });
   }, [page, size, refetch]);
 
+  // Modified useEffect to include parameter phases data
   useEffect(() => {
     if (
       selectedPlanData &&
       !selectedPlanLoading &&
       planDetails &&
-      !loadingPlanDetail
+      !loadingPlanDetail &&
+      planAttributesData &&
+      !loadingPlanAttributes &&
+      planParameterActionsData &&
+      !loadingPlanParameterActions &&
+      planParameterPhasesData &&
+      !loadingPlanParameterPhases
     ) {
       const selectedParameters =
         planDetails?.getPlanDetailsById?.parameters ?? [];
       const selectedProfiles = planProfilesData?.getPlanProfiles || [];
+
+      const selectedAttributes = (
+        planAttributesData?.getPlanDetailsById?.attributes || []
+      ).map((attr: IAttribute) => ({
+        id: attr.id || null,
+        attribute: attr.attributeName,
+        value: attr.attributeValue,
+        attributeName: attr.attributeName,
+        attributeValue: attr.attributeValue,
+        isExisting: true,
+      }));
+
+      const selectedParameterActions = (
+        planParameterActionsData?.getPlanDetailsById?.parameterActions || []
+      ).map((action: IParameterAction) => ({
+        id: action.id || null,
+        actionId: action.actionId,
+        actionPhase: action.actionPhase,
+        parameterName: action.parameterName,
+        actionSequence: action.actionSequence,
+        matchReturn: action.matchReturn,
+        entity: action.entity,
+        isExisting: true,
+      }));
+
+      const selectedParameterPhases = (
+        planParameterPhasesData?.getPlanDetailsById?.parameterPhases || []
+      ).map((phase: IParameterPhase) => ({
+        id: phase.id || null,
+        parameterName: phase.parameterName,
+        phase: phase.phase,
+        status: phase.status,
+        entityState: phase.entityState,
+        entity: phase.entity,
+        isExisting: true,
+      }));
+
+      console.log("Normalized Selected Attributes:", selectedAttributes);
+      console.log(
+        "Normalized Selected Parameter Phases:",
+        selectedParameterPhases
+      );
 
       navigate(`/manage-plan`, {
         state: {
           planData: selectedPlanData.getPlansById,
           selectedProfiles,
           selectedParameters,
+          selectedAttributes,
+          selectedParameterActions,
+          selectedParameterPhases,
         },
       });
     }
@@ -104,6 +198,12 @@ const ViewPlans: FC = () => {
     planProfilesData,
     planDetails,
     loadingPlanDetail,
+    planAttributesData,
+    loadingPlanAttributes,
+    planParameterActionsData,
+    loadingPlanParameterActions,
+    planParameterPhasesData,
+    loadingPlanParameterPhases,
     navigate,
   ]);
 
@@ -113,9 +213,12 @@ const ViewPlans: FC = () => {
     getPlansById({ variables: { planId: plan.planId } });
     getPlanProfiles({ variables: { planId: plan.planId } });
     getPlanDetailById({ variables: { planId: plan.planId } });
+    getPlanAttributesById({ variables: { planId: plan.planId } });
+    getPlanParameterActionsById({ variables: { planId: plan.planId } });
+    getPlanParameterPhasesById({ variables: { planId: plan.planId } });
   };
 
-  const confirmDelete = (plan: any) => {
+  const confirmDelete = (plan: IPlan) => {
     setPlanToDelete(plan);
   };
 
@@ -129,19 +232,21 @@ const ViewPlans: FC = () => {
     setPlanToDelete(null);
   };
 
-  const ActionButtons = (rowData: any) => (
+  const ActionButtons = (rowData: IPlan) => (
     <div className="flex items-center gap-2">
       <Button
         icon="pi pi-file-edit"
         aria-label="Edit"
         onClick={() => handleEdit(rowData)}
         className="p-button-rounded p-button-info"
+        tooltip="Edit"
       />
       <Button
         icon="pi pi-trash"
         aria-label="Delete"
         onClick={() => confirmDelete(rowData)}
         className="p-button-rounded p-button-danger"
+        tooltip="Delete"
       />
     </div>
   );

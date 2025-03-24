@@ -63,38 +63,56 @@ const ViewSubscribers: FC = () => {
     );
   };
 
+ 
+  const handleViewDetails = (subscriber: ISubscriber) => {
+    navigate(
+      `/subscriber-details/${subscriber.subscriberId}`,
+      { replace: false }
+    );
+  };
+
   const confirmDelete = (subscriber: ISubscriber) => {
-    setSubscriberToDelete(subscriber); // Set the subscriber to delete
+    setSubscriberToDelete(subscriber); 
   };
 
   const handleDelete = () => {
     if (subscriberToDelete) {
       deleteSubscriber({
         variables: { subscriberId: subscriberToDelete.subscriberId },
-      }); // Proceed with deletion
+      }); 
       setSubscriberToDelete(null);
-      console.log(deleteSubscriberSuccess); // Reset the subscriber to delete
+      console.log(deleteSubscriberSuccess); 
     }
   };
 
   const cancelDelete = () => {
-    setSubscriberToDelete(null); // Cancel deletion
+    setSubscriberToDelete(null); 
   };
 
   const ActionButtons = (rowData: any) => {
     return (
       <div className="flex items-center gap-2">
+        {/* New Details Button */}
+        <Button
+          icon="pi pi-eye"
+          aria-label="View Details"
+          onClick={() => handleViewDetails(rowData)}
+          className="p-button-rounded p-button-info"
+          tooltip="View Details"
+        />
         <Button
           icon="pi pi-file-edit"
           aria-label="Edit"
           onClick={() => handleEdit(rowData)}
           className="p-button-rounded p-button-info"
+          tooltip="Edit"
         />
         <Button
           icon="pi pi-trash"
           aria-label="Delete"
           onClick={() => confirmDelete(rowData)}
           className="p-button-rounded p-button-danger"
+          tooltip="Delete"
         />
       </div>
     );

@@ -731,6 +731,16 @@ const ManageSubscriber: FC = () => {
     };
   };
 
+  const handleNext = () => {
+    if (stepperRef.current) {
+      const nextIndex = activeIndex + 1;
+      if (nextIndex <= 1) {
+        setActiveIndex(nextIndex);
+        stepperRef.current.nextCallback();
+      }
+    }
+  };
+
 const handlingSubscriberSave = useCallback(() => {
   const { isValid, errors } = validateForm(formData);
 
@@ -1409,9 +1419,10 @@ const handlingSubscriberSave = useCallback(() => {
             bottom: 0,
             display: "flex",
             justifyContent: "center",
-            height: "100%",
+           // height: "100%",
             left: 0,
             right: 0,
+              maxHeight: '73vh', overflowY: 'scroll', height: '73vh' 
           }}
           // className={"absolute"}
         >
@@ -1867,23 +1878,23 @@ const handlingSubscriberSave = useCallback(() => {
                 </TabView>
               </StepperPanel>
             </Stepper>
-            <div
+            
+          </div>
+        </div>
+        <div
               className="flex pt-4"
               style={{
-                bottom: 0,
-                left: 0,
-                right: 0,
-                position: "fixed",
+                
                 width: "100%",
                 height: 80,
                 backdropFilter: "blur(10px)",
                 background:
                   "linear-gradient(139deg, rgba(255,255,255,1) 12%, rgba(175,223,255,0.1) 90%)",
-                zIndex: 9999,
+                //zIndex: 9999,
                 display: "flex",
-                alignItems: "center",
+                //alignItems: "center",
                 borderTop: "solid 1px #8dd1ff",
-                justifyContent: "space-between",
+                justifyContent: "flex-start",
               }}
             >
               <div
@@ -1900,7 +1911,7 @@ const handlingSubscriberSave = useCallback(() => {
                 <p
                   style={{ fontSize: 12, color: "gray", fontFamily: "ubuntu" }}
                 >
-                  3A Web console | Copyright 2024
+                  3A Web console | Copyright 2025
                 </p>
               </div>
               <div
@@ -1933,7 +1944,7 @@ const handlingSubscriberSave = useCallback(() => {
                     icon="pi pi-arrow-right"
                     severity="secondary"
                     iconPos="right"
-                    onClick={handlingSubscriberSave}
+                    onClick={handleNext}
                   />
                 )}
 
@@ -1951,8 +1962,6 @@ const handlingSubscriberSave = useCallback(() => {
                 />
               </div>
             </div>
-          </div>
-        </div>
       </div>
     </React.Fragment>
   );
