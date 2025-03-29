@@ -525,6 +525,7 @@ export const GET_SUBSCRIBER_BY_ID = gql`
         planId
         planState
         statusDate
+        planName
       }
       planParameterSubscriberOverRide {
         subscriberId
@@ -538,6 +539,14 @@ export const GET_SUBSCRIBER_BY_ID = gql`
         overRideKey
         overRideValue
         overRideWhen
+      }
+      defaultParameters {
+        planId
+        parameters {
+          parameterId
+          parameterName
+          parameterValue
+        }
       }
     }
   }

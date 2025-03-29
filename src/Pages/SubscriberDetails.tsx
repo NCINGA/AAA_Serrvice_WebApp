@@ -125,7 +125,9 @@ const SubscriberDetails: FC = () => {
 
   return (
     <div className="card w-full h-full">
-      <AppHeader title={`Subscriber Details #${subscriber.subscriberId}`} />
+      <AppHeader
+        title={`Subscriber Details of ${subscriber.username} #${subscriber.subscriberId} `}
+      />
 
       <div style={{ padding: "20px", marginTop: "80px" }}>
         <Button
@@ -191,8 +193,16 @@ const SubscriberDetails: FC = () => {
           <h3 className="text-xl font-bold mb-4">Subscriber Plan</h3>
           {subscriber.subscriberPlan && subscriber.subscriberPlan.length > 0 ? (
             <div className="grid">
-              {subscriber.subscriberPlan.map((plan:any, index:any) => (
+              {subscriber.subscriberPlan.map((plan: any, index: any) => (
                 <React.Fragment key={index}>
+                  <div className="col-12 md:col-6 lg:col-3 mb-3">
+                    <div className="bg-blue-50 p-3 rounded">
+                      <p className="text-sm text-gray-600 font-bold mb-1">
+                        Plan Name
+                      </p>
+                      <p className="font-medium">{plan.planName || "N/A"}</p>
+                    </div>
+                  </div>
                   <div className="col-12 md:col-6 lg:col-3 mb-3">
                     <div className="bg-blue-50 p-3 rounded">
                       <p className="text-sm text-gray-600 font-bold mb-1">
@@ -405,6 +415,46 @@ const SubscriberDetails: FC = () => {
               header="Created At"
               body={(rowData) => formatDate(rowData.createAt)}
               style={{ width: "20%" }}
+            />
+          </DataTable>
+        </Card>
+
+        {/* Default Plan Parameters Card */}
+        <Card className="mb-4">
+          <h3 className="text-xl font-bold mb-4">Default Plan Parameters</h3>
+
+          <DataTable
+            value={
+              subscriber.defaultParameters
+                ? subscriber.defaultParameters.flatMap((item:any) =>
+                    item.parameters.map((param:any) => ({
+                      planId: item.planId,
+                      ...param,
+                    }))
+                  )
+                : []
+            }
+            rows={5}
+            paginator={
+              subscriber.defaultParameters?.[0]?.parameters?.length > 5
+            }
+            rowsPerPageOptions={[5, 10, 20]}
+            className="p-datatable-sm"
+            emptyMessage="No default plan parameters available"
+            responsiveLayout="scroll"
+            showGridlines
+          >
+            <Column field="planId" header="Plan ID" style={{ width: "20%" }} />
+            
+            <Column
+              field="parameterName"
+              header="Parameter Name"
+              style={{ width: "30%" }}
+            />
+            <Column
+              field="parameterValue"
+              header="Parameter Value"
+              style={{ width: "30%" }}
             />
           </DataTable>
         </Card>

@@ -735,8 +735,20 @@ const ManageSubscriber: FC = () => {
     if (stepperRef.current) {
       const nextIndex = activeIndex + 1;
       if (nextIndex <= 1) {
+        stepperRef.current.setActiveStep(nextIndex);
         setActiveIndex(nextIndex);
-        stepperRef.current.nextCallback();
+      }
+    }
+  };
+
+  const handleBack = () => {
+    if (stepperRef.current) {
+      const prevIndex = activeIndex - 1;
+      if (prevIndex >= 0) {
+        stepperRef.current.setActiveStep(prevIndex);
+        setActiveIndex(prevIndex);
+      } else {
+        navigate("/view-subscribers", { replace: true });
       }
     }
   };
@@ -1474,6 +1486,7 @@ const handlingSubscriberSave = useCallback(() => {
                         id="username"
                         value={formData.username}
                         onChange={(e) => handleInputChange(e, "username")}
+                        readOnly={mode === "edit"} 
                       />
                     </div>
 
@@ -1929,14 +1942,8 @@ const handlingSubscriberSave = useCallback(() => {
                   label="Back"
                   severity="secondary"
                   icon="pi pi-arrow-left"
-                  onClick={() => {
-                    setActiveStep(true);
-                    if (stepperRef.current?.getActiveStep() === 0) {
-                      navigate("/view-subscribers", { replace: true });
-                    } else {
-                      stepperRef.current.prevCallback();
-                    }
-                  }}
+                  onClick={handleBack}
+                  disabled={activeIndex === 1||activeIndex === 2||activeIndex === 3||activeIndex === 4||activeIndex === 5}
                 />
                 {activeStep && (
                   <Button
@@ -1945,6 +1952,7 @@ const handlingSubscriberSave = useCallback(() => {
                     severity="secondary"
                     iconPos="right"
                     onClick={handleNext}
+                    disabled={activeIndex === 1||activeIndex === 2||activeIndex === 3||activeIndex === 4||activeIndex === 5}
                   />
                 )}
 
