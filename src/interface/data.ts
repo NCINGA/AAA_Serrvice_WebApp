@@ -1,10 +1,70 @@
+export interface IAVP {
+    id: number;
+    avpName: string;
+    status: string;
+    overrideEnabled: number;
+    avpValue: string;
+    includeWhen: string;
+}
+
+export interface IProfile {
+    id: number;
+    profile: string;
+    profileId: number;
+    avpProfile: IAVP[];
+    description: string;
+    profileKey: string; // Optional, if applicable
+}
+
+
+
+
+export interface IProfilenas{
+    profileId?: number | null | undefined;
+    attributeGroup?: number | null | undefined;
+    profileKey?: number | null | undefined;
+    description?: number | null | undefined;
+    groupname?: number | null | undefined;
+}
+
+// export interface IProfile {
+//     profileId?: number | null | undefined;
+//     profileKey?: number | null ;
+//     description?: string;
+//     attributeGroup?: number | null;
+// }
+
+
+export interface IPlanProfile {
+
+    profileId: number;
+    attributeGroup?: number;
+    profileKey?: string;
+    description?: string;
+    state?: string;
+  }
 
 
 export interface IPlan {
-    planId: number;
-    planType?: string;
-    planName: string;
+    planId?: number | null | undefined;
+    typeId?: number | null;
+    type?: string;
+    planName?: string;
     description?: string;
+    planProfiles?: IPlanProfile[];
+    planParameters?: IPlanParameter[] | any;
+    planAttributes?: IPlanAttribute[] | any;
+    parameterActions?:IPlanParameterAction[] | any;
+    parameterPhases?:IPlanParameterPhase[] | any;
+}
+
+export interface INas {
+    nas_id?: number | null | undefined;
+    nas_name?: string;
+    nas_type?: string;
+    nas_secret?: string;
+    coa_port?: number | null;
+    nas_attrgroup?: number | null;
 }
 
 export interface IPlanAttribute {
@@ -56,6 +116,13 @@ export interface ISubscriberAVP {
     status?: string;
 }
 
+export interface IPlanProfile {
+    id: number;
+    plan_id: number;
+    profile_id: number;
+    status: string;
+}
+
 export enum OperationEnum {
     CHECK = 'CHECK',
     REPLY = 'REPLY'
@@ -63,11 +130,13 @@ export enum OperationEnum {
 
 export enum StatusEnum {
     ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE'
+    INACTIVE = 'INACTIVE',
+    SUSPENDED = 'SUSPENDED',
 }
 
 export enum TypeEnum {
-    PoPEE = 'PoPEE',
+    PPPoE  = 'PPPoE ',
+    IPoE = 'IPoE',
     OTHER = 'OTHER'
 }
 
@@ -138,8 +207,57 @@ export interface IParameterMeta {
     id?: number
     parameter?: string
 }
-export interface IProfile {
-    id?: number
-    profile?: string
+// export interface IProfile {
+//     id?: number
+//     profile?: string
+// }
+
+export interface IProfileMapping {
+    profileId?: number;
+    status: String;
 }
 
+
+export interface IPlanMappingProfile{
+    planId: number;
+    profiles: IProfileMapping[]
+}
+
+export interface IParameterMapping{
+    parameterName?: String;
+    parameterValue?: String;
+    value: string;
+    parameter: string;
+}
+
+export interface IAttributeMapping{
+    id: number;
+    attributeName?: String;
+    attributeValue?: String;
+    attribute?: String;
+    value?: String;
+    
+}
+
+export interface IPlanMappingParameter{
+    planId: number;
+    parameters: IParameterMapping[]
+}
+
+export interface IPlanParameterAction {
+    id?: number;
+    actionId: number;
+    actionPhase: string;
+    parameterName: string;
+    actionSequence: number;
+    matchReturn: number;
+    entity: string;
+  }
+
+  export interface IPlanParameterPhase{
+    parameterName: string;
+    phase: string;
+    status: string;
+    entityState: string;
+    entity: string;
+  }

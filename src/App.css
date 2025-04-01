@@ -49,3 +49,36 @@
     font-weight: bold;
 }
 
+.field-grid {
+    display: flex;
+    align-items: center;
+    gap: 1rem; 
+    margin-bottom: 1rem; 
+  }
+  
+  .field-label {
+    width: 12rem; 
+    font-weight: bold; 
+  }
+  
+  .app {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .main {
+    flex: 1;
+    transition: margin-left 0.3s ease;
+  }
+  
+  .main-expanded {
+    margin-left: 250px; 
+  }
+  
+  .main-collapsed {
+    margin-left: 60px; 
+  }
+  
+  .content {
+    padding: 20px;
+  }
