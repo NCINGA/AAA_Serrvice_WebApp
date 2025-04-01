@@ -3,7 +3,6 @@ import {useQuery} from "@apollo/client";
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
 import {Dropdown} from "primereact/dropdown";
-import {InputText} from "primereact/inputtext";
 import {GET_PROFILES, GET_STATE} from "../../graphql/queries";
 import {IProfile} from "../../interface/data";
 
@@ -23,7 +22,7 @@ const PlanProfile = ({
 }: PlanProfileProps) => {
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(10);
-  const [searchTerm, setSearchTerm] = useState("");
+  // const [searchTerm, setSearchTerm] = useState("");
   const [combinedData, setCombinedData] = useState<any[]>([]);
 
   const {
@@ -49,7 +48,7 @@ const PlanProfile = ({
 
       // Combine profile data with state data based on profileId
       const mergedData = profiles.map((profile:any) => {
-        console.log("Profile", profile)
+        console.log("Profile", profile);
 
         const matchingState = fetchProfilesStatus?.planProfiles?.find(
           (p:any) => p.profileId === profile.profileId
@@ -65,10 +64,6 @@ const PlanProfile = ({
       });
 
       setCombinedData(mergedData);
-
-      console.log("Profile Data", "fetchProfilesStatus>>",fetchProfilesStatus?.planProfiles, "mergedData>>",mergedData)
-
-
     }
   }, [profilesData, fetchProfilesStatus, stateData]);
 
@@ -78,17 +73,17 @@ const PlanProfile = ({
     refetchProfiles({page: event.first / event.rows, size: event.rows});
   };
 
-  const handleSearch = (e:any) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
+  // const handleSearch = (e:any) => {
+  //   const term = e.target.value.toLowerCase();
+  //   setSearchTerm(term);
 
-    const filtered = combinedData?.filter(
-        (profile: IProfile) =>
-            profile?.profileKey.toLowerCase().includes(term) ||
-            profile?.description.toLowerCase().includes(term)
-    );
-    setCombinedData(filtered);
-  };
+  //   const filtered = combinedData?.filter(
+  //       (profile: IProfile) =>
+  //           profile?.profileKey.toLowerCase().includes(term) ||
+  //           profile?.description.toLowerCase().includes(term)
+  //   );
+  //   setCombinedData(filtered);
+  // };
 
   const handleStateChange = (e:any, rowData:any) => {
     const newState = e.value;
@@ -120,7 +115,7 @@ const PlanProfile = ({
 
   return (
     <div className="card">
-      <div className="flex align-items-center justify-content-between mb-3">
+      {/* <div className="flex align-items-center justify-content-between mb-3">
         <span className="p-input-icon-left" style={{ width: "300px" }}>
           <InputText
             value={searchTerm}
@@ -129,7 +124,7 @@ const PlanProfile = ({
             style={{ width: "100%" }}
           />
         </span>
-      </div>
+      </div> */}
 
       <DataTable
         value={combinedData}
@@ -144,6 +139,7 @@ const PlanProfile = ({
         rowsPerPageOptions={[5, 10, 20]}
         onPage={onPageChange}
         tableStyle={{ minWidth: "50rem" }}
+        scrollHeight="100%"
       >
         <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
         <Column field="profileKey" header="Profile Key" />

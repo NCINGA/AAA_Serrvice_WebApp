@@ -4,13 +4,13 @@ import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Dropdown } from "primereact/dropdown";
 import { InputSwitch } from "primereact/inputswitch";
-import "primereact/resources/themes/saga-blue/theme.css"; // Theme for styling
+import { Toast } from "primereact/toast";
+import "primereact/resources/themes/saga-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import { GET_STATE, CREATE_AVP_PROFILE, UPDATE_AVP_PROFILE } from "../graphql/queries";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
-// import {IAVP} from "../interface/data.ts";
 
 type Props = {
     profileId?: number;
@@ -27,25 +27,31 @@ type Props = {
     onEditComplete?: (avp: any) => void;
 };
 
+interface FormErrors {
+    avpName?: string;
+    avpValue?: string;
+    includeWhen?: string;
+}
+
 const AvpAdd: FC<Props> = ({ profileId, onAdd, editingAvp, onEditComplete }) => {
     const [visible, setVisible] = useState(false);
     const [types, setTypes] = useState<{ label: string; value: string }[]>([]);
     const navigate = useNavigate();
-    // const [] = useLocation();
-    //  const profileData = location.state?.profileData || null;
     const [isEditing, setIsEditing] = useState(false);
-    const toast = useRef<any>(null);
+    const toast = useRef<Toast>(null);
     const [errorMsg, setErrorMsg] = useState("");
     const [creating] = useState(false);
+    const [formErrors, setFormErrors] = useState<FormErrors>({});
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
+
     const [formData, setFormData] = useState({
         avpName: "",
         avpValue: "",
         overrideEnabled: 0,
-        status: "",
+        status: "INACTIVE",
         includeWhen: "",
     });
 
-    // Mutation to create a profile
     const [createAvpProfile] = useMutation(CREATE_AVP_PROFILE, {
         onCompleted: () => {
             toast.current?.show({
@@ -57,6 +63,8 @@ const AvpAdd: FC<Props> = ({ profileId, onAdd, editingAvp, onEditComplete }) => 
         },
         onError: (error) => {
             console.error("Error creating profile:", error);
+            console.log(errorMsg);
+            
             const message = error instanceof Error ? error.message : "An unexpected error occurred";
             setErrorMsg(message);
             toast.current?.show({
@@ -88,7 +96,45 @@ const AvpAdd: FC<Props> = ({ profileId, onAdd, editingAvp, onEditComplete }) => 
         },
     });
 
-    console.log(errorMsg)
+    const validateField = (name: string, value: string) => {
+        let error = "";
+        switch (name) {
+            case "avpName":
+                if (!value.trim()) {
+                    error = "AVP Name is required";
+                } else if (value.length < 2) {
+                    error = "AVP Name must be at least 2 characters";
+                }
+                break;
+            case "avpValue":
+                if (!value.trim()) {
+                    error = "AVP Value is required";
+                }
+                break;
+            case "includeWhen":
+                if (!value) {
+                    error = "Include When is required";
+                }
+                break;
+            default:
+                break;
+        }
+        return error;
+    };
+
+    const validateForm = () => {
+        const errors: FormErrors = {};
+        Object.keys(formData).forEach((key) => {
+            if (key === "avpName" || key === "avpValue" || key === "includeWhen") {
+                const error = validateField(key, String(formData[key as keyof typeof formData]));
+                if (error) {
+                    errors[key as keyof FormErrors] = error;
+                }
+            }
+        });
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
 
     useEffect(() => {
         if (editingAvp) {
@@ -99,47 +145,46 @@ const AvpAdd: FC<Props> = ({ profileId, onAdd, editingAvp, onEditComplete }) => 
                 status: editingAvp.status || "",
                 includeWhen: editingAvp.includeWhen || "",
             });
-            setVisible(true); // Open the dialog when editing
-            setIsEditing(true); // Mark as editing
+            setVisible(true);
+            setIsEditing(true);
         } else {
-            setIsEditing(false); // Mark as creating
+            setIsEditing(false);
         }
     }, [editingAvp]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const { avpName, avpValue, overrideEnabled, status, includeWhen } = formData;
+        // Mark all fields as touched
+        const allTouched = Object.keys(formData).reduce((acc, key) => ({
+            ...acc,
+            [key]: true
+        }), {});
+        setTouched(allTouched);
+
+        if (!validateForm()) {
+            toast.current?.show({
+                severity: "error",
+                summary: "Validation Error",
+                detail: "Please check all required fields",
+            });
+            return;
+        }
 
         try {
             if (isEditing) {
-                // Update profile
                 const { data } = await updateAvpProfile({
                     variables: {
-                        id: editingAvp?.id ?? 0, // Ensure editingAvp has a valid ID
-                        avpName,
-                        avpValue,
-                        overrideEnabled,
-                        status,
-                        includeWhen,
+                        id: editingAvp?.id ?? 0,
+                        ...formData,
                     },
                 });
-                onEditComplete?.(data.updateAvpProfile.profile); // Pass updated profile back
+                onEditComplete?.(data.updateAvpProfile.profile);
             } else {
-                if (!formData.avpName) {
-                    setErrorMsg("Please enter avp name.");
-                    toast.current?.show({
-                        severity: "error",
-                        summary: "Error",
-                        detail: "name is requred.",
-                    });
-                    return;
-                }
-                // Create new profile
                 const { data } = await createAvpProfile({
-                    variables: { profileId, avpName, avpValue, overrideEnabled, status, includeWhen },
+                    variables: { profileId, ...formData },
                 });
-                onAdd?.(data.createAvpProfile.profile); // Pass new profile back
+                onAdd?.(data.createAvpProfile.profile);
             }
             setVisible(false);
         } catch (error) {
@@ -156,10 +201,26 @@ const AvpAdd: FC<Props> = ({ profileId, onAdd, editingAvp, onEditComplete }) => 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
+        
+        // Mark field as touched
+        setTouched(prev => ({ ...prev, [name]: true }));
+        
+        // Validate the field
+        const error = validateField(name, value);
+        setFormErrors(prev => ({
+            ...prev,
+            [name]: error
+        }));
     };
 
     const handleDropdownChange = (e: { value: string }) => {
         setFormData((prev) => ({ ...prev, includeWhen: e.value }));
+        setTouched(prev => ({ ...prev, includeWhen: true }));
+        const error = validateField("includeWhen", e.value);
+        setFormErrors(prev => ({
+            ...prev,
+            includeWhen: error
+        }));
     };
 
     const handleToggleChange = (checked: boolean) => {
@@ -200,17 +261,25 @@ const AvpAdd: FC<Props> = ({ profileId, onAdd, editingAvp, onEditComplete }) => 
             avpName: "",
             avpValue: "",
             overrideEnabled: 0,
-            status: "",
+            status: "INACTIVE", 
             includeWhen: "",
-        }); // Reset form data
-        setIsEditing(false); // Ensure we are in "Add" mode
-        setVisible(true); // Show the dialog
+        });
+        setFormErrors({});
+        setTouched({});
+        setIsEditing(false);
+        setVisible(true);
     };
+    
 
-    const hideDialog = () => setVisible(false);
+    const hideDialog = () => {
+        setVisible(false);
+        setFormErrors({});
+        setTouched({});
+    };
 
     return (
         <div>
+            <Toast ref={toast} />
             <Button
                 label="Add Avp"
                 icon="pi pi-plus"
@@ -219,7 +288,7 @@ const AvpAdd: FC<Props> = ({ profileId, onAdd, editingAvp, onEditComplete }) => 
             />
 
             <Dialog
-                header={<h4 style={{ margin: 0 }}>Add Avp Details</h4>}
+                header={<h4 style={{ margin: 0 }}>{isEditing ? "Edit" : "Add"} Avp Details</h4>}
                 visible={visible}
                 style={{ width: "30vw", borderRadius: "12px" }}
                 onHide={hideDialog}
@@ -227,43 +296,55 @@ const AvpAdd: FC<Props> = ({ profileId, onAdd, editingAvp, onEditComplete }) => 
                 <form onSubmit={handleSubmit}>
                     <div className="p-fluid p-grid p-mt-3 p-px-2">
                         {/* AVP Name */}
-                        <div className="p-field p-col-12">
-                            <label htmlFor="avpName">AVP Name</label>
+                        <div className="p-field p-col-12 mb-4">
+                            <label htmlFor="avpName">AVP Name *</label>
                             <InputText
                                 id="avpName"
                                 name="avpName"
                                 value={formData.avpName}
                                 onChange={handleInputChange}
                                 placeholder="Enter AVP Name"
+                                className={touched.avpName && formErrors.avpName ? "p-invalid" : ""}
                             />
+                            {touched.avpName && formErrors.avpName && (
+                                <small className="p-error block">{formErrors.avpName}</small>
+                            )}
                         </div>
 
                         {/* AVP Value */}
-                        <div className="p-field p-col-12">
-                            <label htmlFor="avpValue">AVP Value</label>
+                        <div className="p-field p-col-12 mb-4">
+                            <label htmlFor="avpValue">AVP Value *</label>
                             <InputText
                                 id="avpValue"
                                 name="avpValue"
                                 value={formData.avpValue}
                                 onChange={handleInputChange}
                                 placeholder="Enter AVP Value"
+                                className={touched.avpValue && formErrors.avpValue ? "p-invalid" : ""}
                             />
+                            {touched.avpValue && formErrors.avpValue && (
+                                <small className="p-error block">{formErrors.avpValue}</small>
+                            )}
                         </div>
 
                         {/* Include When */}
-                        <div className="p-field p-col-12">
-                            <label htmlFor="includeWhen">Include When</label>
+                        <div className="p-field p-col-12 mb-4">
+                            <label htmlFor="includeWhen">Include When *</label>
                             <Dropdown
                                 id="includeWhen"
                                 value={formData.includeWhen}
                                 options={types}
                                 onChange={handleDropdownChange}
                                 placeholder="Select an Option"
+                                className={touched.includeWhen && formErrors.includeWhen ? "p-invalid" : ""}
                             />
+                            {touched.includeWhen && formErrors.includeWhen && (
+                                <small className="p-error block">{formErrors.includeWhen}</small>
+                            )}
                         </div>
 
                         {/* Status */}
-                        <div className="field">
+                        <div className="field mb-4">
                             <label htmlFor="status" className="font-medium mb-2 block">
                                 Status
                             </label>
@@ -283,7 +364,7 @@ const AvpAdd: FC<Props> = ({ profileId, onAdd, editingAvp, onEditComplete }) => 
                         </div>
 
                         {/* Override Enabled */}
-                        <div className="field">
+                        <div className="field mb-4">
                             <label htmlFor="overrideEnabled" className="font-medium mb-2 block">
                                 Override Enabled
                             </label>
@@ -303,19 +384,19 @@ const AvpAdd: FC<Props> = ({ profileId, onAdd, editingAvp, onEditComplete }) => 
                         </div>
                     </div>
 
-                    <div className="p-d-flex p-jc-end p-mt-4">
+                    <div className="flex justify-end gap-2 mt-4">
                         <Button
                             label="Cancel"
                             icon="pi pi-times"
-                            className="p-button-text p-mr-2"
+                            className="p-button-text"
                             onClick={hideDialog}
+                            type="button"
                         />
                         <Button
                             label={isEditing ? "Update Profile" : "Save"}
                             icon="pi pi-check"
                             type="submit"
                             className="p-button-success"
-                            onClick={handleSubmit}
                             disabled={creating || updating}
                         />
                     </div>

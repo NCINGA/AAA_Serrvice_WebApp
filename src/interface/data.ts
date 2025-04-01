@@ -53,6 +53,9 @@ export interface IPlan {
     description?: string;
     planProfiles?: IPlanProfile[];
     planParameters?: IPlanParameter[] | any;
+    planAttributes?: IPlanAttribute[] | any;
+    parameterActions?:IPlanParameterAction[] | any;
+    parameterPhases?:IPlanParameterPhase[] | any;
 }
 
 export interface INas {
@@ -127,11 +130,13 @@ export enum OperationEnum {
 
 export enum StatusEnum {
     ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE'
+    INACTIVE = 'INACTIVE',
+    SUSPENDED = 'SUSPENDED',
 }
 
 export enum TypeEnum {
-    PoPEE = 'PoPEE',
+    PPPoE  = 'PPPoE ',
+    IPoE = 'IPoE',
     OTHER = 'OTHER'
 }
 
@@ -225,8 +230,34 @@ export interface IParameterMapping{
     parameter: string;
 }
 
+export interface IAttributeMapping{
+    id: number;
+    attributeName?: String;
+    attributeValue?: String;
+    attribute?: String;
+    value?: String;
+    
+}
+
 export interface IPlanMappingParameter{
     planId: number;
     parameters: IParameterMapping[]
 }
 
+export interface IPlanParameterAction {
+    id?: number;
+    actionId: number;
+    actionPhase: string;
+    parameterName: string;
+    actionSequence: number;
+    matchReturn: number;
+    entity: string;
+  }
+
+  export interface IPlanParameterPhase{
+    parameterName: string;
+    phase: string;
+    status: string;
+    entityState: string;
+    entity: string;
+  }

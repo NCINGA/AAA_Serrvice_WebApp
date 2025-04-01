@@ -63,6 +63,7 @@ import { Toast } from "primereact/toast";
 import AppHeader from "../Components/header/AppHeader";
 
 const ManageSubscriber: FC = () => {
+  const [formErrors, setFormErrors] = useState({});
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useRef<any>(null);
@@ -680,29 +681,148 @@ const ManageSubscriber: FC = () => {
     }
   };
 
-  const handlingSubscriberSave = useCallback(() => {
-    if (mode === "edit") {
-      updateSubscriber({
-        variables: { subscriberId: subscriberId, subscriber: formData },
-      })
-        .then((response) => {
-          console.log("Subscriber update successfully:", response);
-        })
-        .catch((err) => {
-          console.error("Error creating subscriber:", err);
-        });
-    } else {
-      createSubscriber({
-        variables: formData,
-      })
-        .then((response) => {
-          console.log("Subscriber created successfully:", response);
-        })
-        .catch((err) => {
-          console.error("Error creating subscriber:", err);
-        });
+  const validateForm = (formData: any) => {
+    const errors: Record<string, string> = {};
+    
+    const requiredFields = [
+      { key: "username", label: "Username" },
+      { key: "password", label: "Password" },
+      { key: "status", label: "Status" },
+      { key: "email", label: "Email" },
+      { key: "contactNo", label: "Phone" },
+    ];
+  
+    
+    requiredFields.forEach(({ key, label }) => {
+      console.log(`Checking ${key}:`, {
+        value: formData[key],
+        type: typeof formData[key],
+        isEmpty: typeof formData[key] === "string" && formData[key].trim() === ""
+      });
+  
+      
+      const value = formData[key];
+      const isEmpty = 
+        value === undefined || 
+        value === null || 
+        (typeof value === "string" && value.trim().length === 0);
+  
+      if (isEmpty) {
+        errors[key] = `${label} is required`;
+      }
+    });
+  
+    
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.email && !emailPattern.test(formData.email)) {
+      errors.email = "Invalid email format";
     }
-  }, [formData, createSubscriber, updateSubscriber]);
+  
+    
+    const phonePattern = /^\+?[\d\s-()]{10,}$/;
+    if (formData.contactNo && !phonePattern.test(formData.contactNo)) {
+      errors.phone = "Invalid phone number format";
+    }
+  
+    
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors,
+    };
+  };
+
+  const handleNext = () => {
+    if (stepperRef.current) {
+      const nextIndex = activeIndex + 1;
+      if (nextIndex <= 1) {
+        stepperRef.current.setActiveStep(nextIndex);
+        setActiveIndex(nextIndex);
+      }
+    }
+  };
+
+  const handleBack = () => {
+    if (stepperRef.current) {
+      const prevIndex = activeIndex - 1;
+      if (prevIndex >= 0) {
+        stepperRef.current.setActiveStep(prevIndex);
+        setActiveIndex(prevIndex);
+      } else {
+        navigate("/view-subscribers", { replace: true });
+      }
+    }
+  };
+
+const handlingSubscriberSave = useCallback(() => {
+  const { isValid, errors } = validateForm(formData);
+
+  if (!isValid) {
+    setFormErrors(errors);
+
+    
+    Object.keys(errors).forEach((key) => {
+      toast.current.show({
+        severity: "error",
+        summary: "Validation Error",
+        detail: errors[key], 
+        life: 3000
+      });
+    });
+
+    return;
+  }
+
+  console.log(formErrors);
+  
+  setFormErrors({});
+
+  if (mode === "edit") {
+    updateSubscriber({
+      variables: { subscriberId: subscriberId, subscriber: formData },
+    })
+      .then((response) => {
+        console.log("Subscriber updated successfully:", response);
+        toast.current.show({
+          severity: "success",
+          summary: "Success",
+          detail: "Subscriber updated successfully",
+          life: 3000
+        });
+      })
+      .catch((err) => {
+        console.error("Error updating subscriber:", err);
+        toast.current.show({
+          severity: "error",
+          summary: "Error",
+          detail: err.message || "Error updating subscriber",
+          life: 3000
+        });
+      });
+  } else {
+    createSubscriber({
+      variables: formData,
+    })
+      // .then((response) => {
+      //   // console.log("Subscriber created successfully:", response);
+      //   // toast.current.show({
+      //   //   severity: "success",
+      //   //   summary: "Success",
+      //   //   detail: "Subscriber created successfully",
+      //   //   life: 3000
+      //   // });
+      // })
+      .catch((err) => {
+        console.error("Error creating subscriber:", err);
+        toast.current.show({
+          severity: "error",
+          summary: "Error",
+          detail: err.message || "Error creating subscriber",
+          life: 3000
+        });
+      });
+  }
+}, [formData, createSubscriber, updateSubscriber, mode, subscriberId, toast]);
+
 
   useEffect(() => {
     if (createSubscriberError?.graphQLErrors?.[0]?.message !== undefined) {
@@ -793,30 +913,39 @@ const ManageSubscriber: FC = () => {
   }, []);
 
   const handleUpdateSubscriber = useCallback(() => {
+    if (subscriberId === 0) {
+        toast.current?.show({
+            severity: "warn",
+            summary: "Missing Details",
+            detail: "Please fill in the basic details before updating.",
+        });
+        return;
+    }
+
     const updatedFormData = {
-      ...formData,
-      planAttributeOverrides: localAttributes,
-      planParameterOverrides: localParameters,
-      subscriberAVPs: localSubscriberAVP,
-      nasWhitelist: localNasWhitelist,
-      pofileOverrideSubscriberAVPs: localProfileSubscriberOverrideAvps,
-      deviceWhitelist: localDeviceWhitelist,
-      subscriberAttributes: localSubscriberAttribute,
-      subscriberParameters: localSubscriberParameter,
+        ...formData,
+        planAttributeOverrides: localAttributes,
+        planParameterOverrides: localParameters,
+        subscriberAVPs: localSubscriberAVP,
+        nasWhitelist: localNasWhitelist,
+        pofileOverrideSubscriberAVPs: localProfileSubscriberOverrideAvps,
+        deviceWhitelist: localDeviceWhitelist,
+        subscriberAttributes: localSubscriberAttribute,
+        subscriberParameters: localSubscriberParameter,
     };
 
     updateSubscriberParameters({
-      variables: {
-        subscriberId: subscriberId,
-        planId: formData.planId,
-        subscriber: updatedFormData,
-      },
+        variables: {
+            subscriberId: subscriberId,
+            planId: formData.planId,
+            subscriber: updatedFormData,
+        },
     })
-      .then(() => {})
-      .catch((err) => {
-        console.error("Error updating subscriber:", err);
-      });
-  }, [
+        .then(() => {})
+        .catch((err) => {
+            console.error("Error updating subscriber:", err);
+        });
+}, [
     updateSubscriberParameters,
     formData,
     localAttributes,
@@ -826,7 +955,9 @@ const ManageSubscriber: FC = () => {
     localProfileSubscriberOverrideAvps,
     localDeviceWhitelist,
     subscriberId,
-  ]);
+]);
+
+
 
   const handleTabChange = useCallback(async (e: any) => {
     setActiveIndex(e.index);
@@ -1300,11 +1431,12 @@ const ManageSubscriber: FC = () => {
             bottom: 0,
             display: "flex",
             justifyContent: "center",
-            height: "100%",
+           // height: "100%",
             left: 0,
             right: 0,
+              maxHeight: '73vh', overflowY: 'scroll', height: '73vh' 
           }}
-          className={"absolute"}
+          // className={"absolute"}
         >
           <div style={{ width: "80%" }}>
             <Messages ref={msgs} />
@@ -1354,6 +1486,7 @@ const ManageSubscriber: FC = () => {
                         id="username"
                         value={formData.username}
                         onChange={(e) => handleInputChange(e, "username")}
+                        readOnly={mode === "edit"} 
                       />
                     </div>
 
@@ -1487,7 +1620,7 @@ const ManageSubscriber: FC = () => {
                           <DataTable
                             value={localParameters ?? []}
                             scrollable
-                            scrollHeight="300px"
+                            scrollHeight="flex"
                           >
                             <Column
                               field="parameterName"
@@ -1510,7 +1643,7 @@ const ManageSubscriber: FC = () => {
                           <DataTable
                             value={localAttributes ?? []}
                             scrollable
-                            scrollHeight="300px"
+                            scrollHeight="flex"
                           >
                             <Column
                               field="attributeName"
@@ -1554,7 +1687,7 @@ const ManageSubscriber: FC = () => {
                           <DataTable
                             value={localSubscriberAttribute ?? []}
                             scrollable
-                            scrollHeight="300px"
+                            scrollHeight="flex"
                           >
                             <Column
                               field="attributeName"
@@ -1587,7 +1720,7 @@ const ManageSubscriber: FC = () => {
                           <DataTable
                             value={localSubscriberParameter ?? []}
                             scrollable
-                            scrollHeight="300px"
+                            scrollHeight="flex"
                           >
                             <Column
                               field="parameterName"
@@ -1758,23 +1891,23 @@ const ManageSubscriber: FC = () => {
                 </TabView>
               </StepperPanel>
             </Stepper>
-            <div
+            
+          </div>
+        </div>
+        <div
               className="flex pt-4"
               style={{
-                bottom: 0,
-                left: 0,
-                right: 0,
-                position: "fixed",
+                
                 width: "100%",
                 height: 80,
                 backdropFilter: "blur(10px)",
                 background:
                   "linear-gradient(139deg, rgba(255,255,255,1) 12%, rgba(175,223,255,0.1) 90%)",
-                zIndex: 9999,
+                //zIndex: 9999,
                 display: "flex",
-                alignItems: "center",
+                //alignItems: "center",
                 borderTop: "solid 1px #8dd1ff",
-                justifyContent: "space-between",
+                justifyContent: "flex-start",
               }}
             >
               <div
@@ -1791,7 +1924,7 @@ const ManageSubscriber: FC = () => {
                 <p
                   style={{ fontSize: 12, color: "gray", fontFamily: "ubuntu" }}
                 >
-                  3A Web console | Copyright 2024
+                  3A Web console | Copyright 2025
                 </p>
               </div>
               <div
@@ -1809,14 +1942,8 @@ const ManageSubscriber: FC = () => {
                   label="Back"
                   severity="secondary"
                   icon="pi pi-arrow-left"
-                  onClick={() => {
-                    setActiveStep(true);
-                    if (stepperRef.current?.getActiveStep() === 0) {
-                      navigate("/view-subscribers", { replace: true });
-                    } else {
-                      stepperRef.current.prevCallback();
-                    }
-                  }}
+                  onClick={handleBack}
+                  disabled={activeIndex === 1||activeIndex === 2||activeIndex === 3||activeIndex === 4||activeIndex === 5}
                 />
                 {activeStep && (
                   <Button
@@ -1824,7 +1951,8 @@ const ManageSubscriber: FC = () => {
                     icon="pi pi-arrow-right"
                     severity="secondary"
                     iconPos="right"
-                    onClick={handlingSubscriberSave}
+                    onClick={handleNext}
+                    disabled={activeIndex === 1||activeIndex === 2||activeIndex === 3||activeIndex === 4||activeIndex === 5}
                   />
                 )}
 
@@ -1842,8 +1970,6 @@ const ManageSubscriber: FC = () => {
                 />
               </div>
             </div>
-          </div>
-        </div>
       </div>
     </React.Fragment>
   );

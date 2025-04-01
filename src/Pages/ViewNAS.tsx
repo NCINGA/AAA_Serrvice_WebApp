@@ -107,12 +107,14 @@ const ViewNAS: FC = () => {
         aria-label="Edit"
         onClick={() => handleEdit(rowData)}
         className="p-button-rounded p-button-info"
+        tooltip="Edit"
       />
       <Button
         icon="pi pi-trash"
         aria-label="Delete"
         onClick={() => confirmDelete(rowData)}
         className="p-button-rounded p-button-danger"
+        tooltip="Delete"
       />
     </div>
   );

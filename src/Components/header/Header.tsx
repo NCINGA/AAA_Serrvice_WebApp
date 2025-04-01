@@ -58,7 +58,7 @@ const Header: FC = () => {
   useEffect(() => {
     const fetchUsername = async () => {
       try {
-        const response = await axios.get("/service/auth/getUser", {
+        const response = await axios.get("http://localhost:8080/auth/getUser", {
           params: {
             token: token,
           },
