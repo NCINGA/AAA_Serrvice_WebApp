@@ -184,7 +184,11 @@ const ViewManageProfile = () => {
                 
                 <DataTable
                     value={paginatedProfiles}
-                    tableStyle={{ width: '100%' }}
+                    tableStyle={{ 
+                        width: '100%',
+                        borderCollapse: 'separate',
+                        borderSpacing: '0 5px',
+                     }}
                     paginator={false}
                     // responsiveLayout="scroll"
                 >
@@ -199,9 +203,11 @@ const ViewManageProfile = () => {
                                 style={{
                                     maxHeight: '500px', // Adjust height based on your needs
                                     overflowY: 'auto',
-                                    padding: '5px',
+                                    padding: '10px',
                                     border: '1px solid #ccc', // Optional: Add a border for better visibility
-                                    borderRadius: '4px', // Optional: Add rounded corners
+                                    borderRadius: '6px', // Optional: Add rounded corners
+                                    backgroundColor: '#f9f9f9', 
+                                    lineHeight: '1.6'
                                 }}
                             >
                                 <Avp profileId={rowData.profileId} />

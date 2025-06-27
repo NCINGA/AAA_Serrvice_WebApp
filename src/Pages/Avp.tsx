@@ -94,70 +94,73 @@ const AvpForm: React.FC<AvpProps> = ({ profileId }) => {
     return (
         <div className="p-mb-3">
             <Messages ref={toast} />
-            <AvpAdd
-                profileId={profileId}
-                onAdd={() => refetchAvpProfiles()}
-                editingAvp={editingAvp} // Pass the selected AVP for editing
-                onEditComplete={handleEditComplete} // Reset editing state after update
-            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <AvpAdd
+                    profileId={profileId}
+                    onAdd={() => refetchAvpProfiles()}
+                    editingAvp={editingAvp} // Pass the selected AVP for editing
+                    onEditComplete={handleEditComplete} // Reset editing state after update
+                />
 
-            {filteredProfiles.map((profile: any) => (
-                <React.Fragment key={profile.id}>
-                    {profile.avpProfile.map((avp: any) => (
-                        <Card
-                            key={avp.id}
-                            className="p-shadow-3"
-                            style={{ width: "80%", marginBottom: "1rem" }}
-                        >
-                            <div className="p-grid p-align-center p-justify-between">
-                                <div className="p-col-12 p-md-8">
-                                    <h3
-                                        style={{
-                                            fontWeight: "bold",
-                                            margin: "0",
-                                            color: "#495057",
-                                        }}
-                                    >
-                                        {avp.avpName || "Unnamed AVP"}
-                                    </h3>
+                {filteredProfiles.map((profile: any) => (
+                    <React.Fragment key={profile.id}>
+                        {profile.avpProfile.map((avp: any) => (
+                            <Card
+                                key={avp.id}
+                                className="p-shadow-3"
+                                style={{ width: "95%", marginBottom: "1rem" }}
+                            >
+                                <div className="p-grid p-align-center p-justify-between">
+                                    <div className="p-col-12 p-md-8">
+                                        <h3
+                                            style={{
+                                                fontWeight: "bold",
+                                                margin: "0",
+                                                color: "#495057",
+                                            }}
+                                        >
+                                            {avp.avpName || "Unnamed AVP"}
+                                        </h3>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="p-mt-2">
-                                <p>
-                                    <strong>Status:</strong> {avp.status || "null"}
-                                </p>
-                                <p>
-                                    <strong>Override Enabled:</strong> {avp.overrideEnabled === 1 ? "ENABLED" : "DISABLED"}
-                                </p>
-                                <p>
-                                    <strong>AVP Value:</strong> {avp.avpValue || "null"}
-                                </p>
-                                <p>
-                                    <strong>Include When:</strong> {avp.includeWhen || "null"}
-                                </p>
-                            </div>
+                                <div className="p-mt-2">
+                                    <p>
+                                        <strong>Status:</strong> {avp.status || "null"}
+                                    </p>
+                                    <p>
+                                        <strong>Override Enabled:</strong> {avp.overrideEnabled === 1 ? "ENABLED" : "DISABLED"}
+                                    </p>
+                                    <p>
+                                        <strong>AVP Value:</strong> {avp.avpValue || "null"}
+                                    </p>
+                                    <p>
+                                        <strong>Include When:</strong> {avp.includeWhen || "null"}
+                                    </p>
+                                </div>
 
 
-                            <div className="p-col-12 p-md-4 p-text-right">
-                                <Button
-                                    label="Edit"
-                                    icon="pi pi-pencil"
-                                    className="p-button-text p-button-secondary p-mr-2"
-                                    onClick={() => handleEdit(avp)}
-                                />
+                                <div className="p-col-12 p-md-4 p-text-right">
+                                    <Button
+                                        label="Edit"
+                                        icon="pi pi-pencil"
+                                        className="p-button-text p-button-secondary p-mr-2"
+                                        onClick={() => handleEdit(avp)}
+                                    />
 
-                                <Button
-                                    label="Delete"
-                                    icon="pi pi-trash"
-                                    className="p-button-text p-button-danger"
-                                    onClick={() => confirmDelete(avp)}
-                                />
-                            </div>
-                        </Card>
-                    ))}
-                </React.Fragment>
-            ))}
+                                    <Button
+                                        label="Delete"
+                                        icon="pi pi-trash"
+                                        className="p-button-text p-button-danger"
+                                        onClick={() => confirmDelete(avp)}
+                                    />
+                                </div>
+                            </Card>
+                        ))}
+                    </React.Fragment>
+                ))}
+
+            </div>
 
             <ConfirmDialog
                 visible={!!profileToDelete}
