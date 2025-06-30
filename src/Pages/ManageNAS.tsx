@@ -186,7 +186,7 @@ const ManageNAS = () => {
             bottom: 0,
             display: "flex",
             justifyContent: "center",
-            height: "100%",
+            height: "80%",
             left: 0,
             right: 0,
           }}

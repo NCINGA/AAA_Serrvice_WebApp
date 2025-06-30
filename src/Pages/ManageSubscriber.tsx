@@ -1434,7 +1434,7 @@ const handlingSubscriberSave = useCallback(() => {
            // height: "100%",
             left: 0,
             right: 0,
-              maxHeight: '73vh', overflowY: 'scroll', height: '73vh' 
+              maxHeight: '73vh', overflowY: 'scroll', height: '70%' 
           }}
           // className={"absolute"}
         >

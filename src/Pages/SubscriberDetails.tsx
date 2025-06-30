@@ -126,7 +126,7 @@ const SubscriberDetails: FC = () => {
   return (
     <div className="card w-full h-full">
       <AppHeader
-        title={`Subscriber Details of ${subscriber.username} #${subscriber.subscriberId} `}
+        title={`Subscriber Details of ${subscriber.username} `}
       />
 
       <div style={{ padding: "20px", marginTop: "80px" }}>
@@ -138,7 +138,7 @@ const SubscriberDetails: FC = () => {
         />
 
         <h2 className="text-2xl font-bold mb-4">
-          Subscriber #{subscriber.subscriberId}
+          Subscriber ID: {subscriber.subscriberId}
         </h2>
 
         {/* Subscriber Information Card */}
@@ -167,7 +167,7 @@ const SubscriberDetails: FC = () => {
             </div>
             <div className="col-12 md:col-6 lg:col-3 mb-3">
               <p className="font-semibold mb-1">Email</p>
-              <p>{subscriber.email}</p>
+              <p>{subscriber.email || "N/A"}</p>
             </div>
             <div className="col-12 md:col-6 lg:col-3 mb-3">
               <p className="font-semibold mb-1">Contact</p>
@@ -247,16 +247,15 @@ const SubscriberDetails: FC = () => {
           )}
         </Card>
 
-        {/* Usage and Rollover Section */}
-        <div className="grid mb-4">
-          {/* Data Usage Card */}
-          <div className="col-12 lg:col-6 mb-4 lg:mb-0">
-            <Card>
-              <h3 className="text-xl font-bold mb-4">Data Usage</h3>
+        {/* Data Usage Card */}
+        <Card className="mb-4">
+          <h3 className="text-xl font-bold mb-4">Data Usage</h3>
+          
+            <div className="grid">
+                <React.Fragment>
 
-              <div className="grid mb-4">
-                <div className="col-12 md:col-6 lg:col-6 xl:col-3 mb-3">
-                  <div className="bg-blue-50 p-3 rounded">
+                  <div className="col-12 md:col-6 lg:col-3 mb-3">
+                    <div className="bg-blue-50 p-3 rounded">
                     <p className="text-sm text-gray-600 font-bold mb-1">
                       Total Usage
                     </p>
@@ -266,106 +265,100 @@ const SubscriberDetails: FC = () => {
                       )}{" "}
                       GB
                     </p>
+                    </div>
                   </div>
-                </div>
-                <div className="col-12 md:col-6 lg:col-6 xl:col-3 mb-3">
-                  <div className="bg-blue-50 p-3 rounded">
+
+                  <div className="col-12 md:col-6 lg:col-3 mb-3">
+                    <div className="bg-blue-50 p-3 rounded">
                     <p className="text-sm text-gray-600 font-bold mb-1">
                       Report Date
                     </p>
                     <p>{formatDate(subscriber.dataUsages?.[0]?.reportDate)}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="col-12 md:col-6 lg:col-6 xl:col-3 mb-3">
-                  <div className="bg-blue-50 p-3 rounded">
+                  <div className="col-12 md:col-6 lg:col-3 mb-3">
+                    <div className="bg-blue-50 p-3 rounded">
                     <p className="text-sm text-gray-600 font-bold mb-1">
                       Last Reset
                     </p>
                     <p>{formatDate(subscriber.dataUsages?.[0]?.lastReset)}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="col-12 md:col-6 lg:col-6 xl:col-3 mb-3">
-                  <div className="bg-blue-50 p-3 rounded">
+                  <div className="col-12 md:col-6 lg:col-3 mb-3">
+                    <div className="bg-blue-50 p-3 rounded">
                     <p className="text-sm text-gray-600 font-bold mb-1">
                       Next Reset
                     </p>
                     <p>{formatDate(subscriber.dataUsages?.[0]?.nextReset)}</p>
+                    </div>
                   </div>
-                </div>
-              </div>
+                    <Chart
+                      type="pie"
+                      data={usageChartData}
+                      options={chartOptions}
+                    />
+                </React.Fragment>
+            </div>
+        </Card>
 
-              <div style={{ height: "250px" }} className="flex justify-center">
-                <Chart
-                  type="pie"
-                  data={usageChartData}
-                  options={chartOptions}
-                />
-              </div>
-            </Card>
-          </div>
-
-          {/* Data Rollover Card */}
-          <div className="col-12 lg:col-6">
-            <Card>
-              <h3 className="text-xl font-bold mb-4">Data Rollover</h3>
-
-              {subscriber.dataRollovers?.[0] ? (
-                <div className="grid">
-                  <div className="col-12 md:col-6 mb-3">
-                    <div className="bg-green-50 p-3 rounded">
-                      <p className="text-sm text-gray-600 font-bold mb-1">
-                        Rollover ID
-                      </p>
-                      <p>
-                        {subscriber.dataRollovers?.[0]?.rolloverId || "N/A"}
-                      </p>
+        {/* Data Rollover Card */}
+        <Card className="mb-4">
+            <h3 className="text-xl font-bold mb-4">Data Rollover</h3>
+            {subscriber.dataRollovers?.[0] ? (
+                  <div className="grid">
+                    <div className="col-12 md:col-6 mb-3">
+                      <div className="bg-green-50 p-3 rounded">
+                        <p className="text-sm text-gray-600 font-bold mb-1">
+                          Rollover ID
+                        </p>
+                        <p>
+                          {subscriber.dataRollovers?.[0]?.rolloverId || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="col-12 md:col-6 mb-3">
+                      <div className="bg-green-50 p-3 rounded">
+                        <p className="text-sm text-gray-600 font-bold mb-1">
+                          Rollover Date
+                        </p>
+                        <p>
+                          {formatDate(
+                            subscriber.dataRollovers?.[0]?.rolloverDate
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="col-12 md:col-6 mb-3">
+                      <div className="bg-green-50 p-3 rounded">
+                        <p className="text-sm text-gray-600 font-bold mb-1">
+                          Quota
+                        </p>
+                        <p className="text-lg font-bold text-green-700">
+                          {(
+                            subscriber.dataRollovers?.[0]?.rolloverQuotaBytes /
+                            1e9
+                          ).toFixed(2)}{" "}
+                          GB
+                        </p>
+                      </div>
+                    </div>
+                    <div className="col-12 md:col-6 mb-3">
+                      <div className="bg-green-50 p-3 rounded">
+                        <p className="text-sm text-gray-600 font-bold mb-1">
+                          Valid Till
+                        </p>
+                        <p>
+                          {formatDate(subscriber.dataRollovers?.[0]?.validTill)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  <div className="col-12 md:col-6 mb-3">
-                    <div className="bg-green-50 p-3 rounded">
-                      <p className="text-sm text-gray-600 font-bold mb-1">
-                        Rollover Date
-                      </p>
-                      <p>
-                        {formatDate(
-                          subscriber.dataRollovers?.[0]?.rolloverDate
-                        )}
-                      </p>
-                    </div>
+                ) : (
+                  <div className="p-4 text-center bg-gray-50 rounded">
+                    <p className="text-gray-500">No rollover data available</p>
                   </div>
-                  <div className="col-12 md:col-6 mb-3">
-                    <div className="bg-green-50 p-3 rounded">
-                      <p className="text-sm text-gray-600 font-bold mb-1">
-                        Quota
-                      </p>
-                      <p className="text-lg font-bold text-green-700">
-                        {(
-                          subscriber.dataRollovers?.[0]?.rolloverQuotaBytes /
-                          1e9
-                        ).toFixed(2)}{" "}
-                        GB
-                      </p>
-                    </div>
-                  </div>
-                  <div className="col-12 md:col-6 mb-3">
-                    <div className="bg-green-50 p-3 rounded">
-                      <p className="text-sm text-gray-600 font-bold mb-1">
-                        Valid Till
-                      </p>
-                      <p>
-                        {formatDate(subscriber.dataRollovers?.[0]?.validTill)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-4 text-center bg-gray-50 rounded">
-                  <p className="text-gray-500">No rollover data available</p>
-                </div>
-              )}
-            </Card>
-          </div>
-        </div>
+                )}
+        </Card>
 
         {/* Device Whitelist Card */}
         <Card className="mb-4">
