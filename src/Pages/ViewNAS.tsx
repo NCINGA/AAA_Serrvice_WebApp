@@ -102,20 +102,22 @@ const ViewNAS: FC = () => {
 
   const ActionButtons = (rowData: any) => (
     <div className="flex items-center gap-2">
-      <Button
-        icon="pi pi-file-edit"
-        aria-label="Edit"
-        onClick={() => handleEdit(rowData)}
-        className="p-button-rounded p-button-info"
-        tooltip="Edit"
-      />
-      <Button
-        icon="pi pi-trash"
-        aria-label="Delete"
-        onClick={() => confirmDelete(rowData)}
-        className="p-button-rounded p-button-danger"
-        tooltip="Delete"
-      />
+      <div className="flex items-center gap-2">
+        <Button
+          icon="pi pi-file-edit"
+          aria-label="Edit"
+          onClick={() => handleEdit(rowData)}
+          className="p-button-rounded p-button-info"
+          tooltip="Edit"
+        />
+        <Button
+          icon="pi pi-trash"
+          aria-label="Delete"
+          onClick={() => confirmDelete(rowData)}
+          className="p-button-rounded p-button-danger"
+          tooltip="Delete"
+        />
+      </div>
     </div>
   );
 
@@ -188,7 +190,7 @@ const ViewNAS: FC = () => {
             <Column
               body={ActionButtons}
               header="Actions"
-              style={{ width: "20%" }}
+              style={{ width: "50%" }}
             />
           </DataTable>
           <div className="card">

@@ -89,7 +89,7 @@ function App() {
   }, []);
 
   // Add click outside handler
-  useEffect(() => {
+  /*useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
         sideMenuRef.current &&
@@ -107,7 +107,7 @@ function App() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isMenuExpanded]); 
+  }, [isMenuExpanded]);*/ 
 
   
   if (isLoading) {
